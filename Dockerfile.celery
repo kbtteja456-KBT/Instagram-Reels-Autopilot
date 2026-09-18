@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r /app/requirements.txt
 
 COPY backend /app/backend
-COPY .env /app/.env
+RUN touch /app/.env
 
 RUN mkdir -p /app/media_storage
 
