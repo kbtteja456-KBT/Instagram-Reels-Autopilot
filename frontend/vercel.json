@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/:match*",
+      "destination": "https://instagram-reels-autopilot.onrender.com/api/:match*"
+    },
+    {
+      "source": "/media/:match*",
+      "destination": "https://instagram-reels-autopilot.onrender.com/media/:match*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

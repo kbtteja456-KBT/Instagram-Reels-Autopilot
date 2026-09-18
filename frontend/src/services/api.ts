@@ -30,6 +30,20 @@ const authHeaders = (): HeadersInit => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+const safeJson = async (res: Response): Promise<any> => {
+  const text = await res.text();
+  if (!text) {
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText || 'Failed'}`);
+    return {};
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0, 100)}`);
+    throw new Error(`Unexpected non-JSON response from server.`);
+  }
+};
+
 export interface InstagramAccount {
   workspace_id: string;
   instagram_user_id: string;
@@ -214,27 +228,27 @@ export const api = {
         method: 'POST',
         headers: { ...authHeaders() }
       });
-      return res.json();
+      return safeJson(res);
     },
     getAccount: async (): Promise<{ is_connected: boolean; account: InstagramAccount }> => {
       const res = await fetch(`${API_BASE}/auth/instagram/account`, {
         headers: { ...authHeaders() }
       });
-      return res.json();
+      return safeJson(res);
     },
     sync: async (): Promise<{ status: string; account: InstagramAccount }> => {
       const res = await fetch(`${API_BASE}/auth/instagram/sync`, {
         method: 'POST',
         headers: { ...authHeaders() }
       });
-      return res.json();
+      return safeJson(res);
     },
     disconnect: async () => {
       const res = await fetch(`${API_BASE}/auth/instagram/disconnect`, {
         method: 'POST',
         headers: { ...authHeaders() }
       });
-      return res.json();
+      return safeJson(res);
     }
   },
 

@@ -53,7 +53,7 @@ class Settings(BaseSettings):
 
     # Free-Tier AI & Stock Providers
     openrouter_api_key: Optional[str] = None
-    openrouter_model: str = "meta-llama/llama-3.3-70b-instruct:free"
+    openrouter_model: str = "nvidia/nemotron-3.5-lightning:free"
     pexels_api_key: Optional[str] = None
     pixabay_api_key: Optional[str] = None
     zero_cost_mode: bool = True
