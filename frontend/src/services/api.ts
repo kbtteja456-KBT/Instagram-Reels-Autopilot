@@ -2,8 +2,9 @@
  * Typed API Client for AI Instagram Reels Autopilot Backend.
  */
 
-const API_BASE = import.meta.env.VITE_API_URL 
-  ? `${import.meta.env.VITE_API_URL.replace(/\/$/, '')}/api` 
+const viteEnv = (import.meta as any).env;
+const API_BASE = (viteEnv && viteEnv.VITE_API_URL) 
+  ? `${String(viteEnv.VITE_API_URL).replace(/\/$/, '')}/api` 
   : '/api';
 
 const TOKEN_KEY = 'inst_autopilot_token';
