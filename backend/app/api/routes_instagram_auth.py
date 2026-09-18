@@ -150,6 +150,8 @@ async def get_instagram_account_status(
 
     if db is not None:
         account = await db.instagram_accounts.find_one({"workspace_id": workspace_id})
+        if account and "_id" in account:
+            account["_id"] = str(account["_id"])
     if not account:
         account = _mock_account_cache.get(workspace_id, _mock_account_cache.get("default_workspace", {}))
 
@@ -159,6 +161,8 @@ async def get_instagram_account_status(
     # If an actual valid Meta token is configured in the environment
     if token and token.startswith("EAA"):
         account_copy = dict(account) if account else {}
+        if "_id" in account_copy:
+            account_copy["_id"] = str(account_copy["_id"])
         account_copy["workspace_id"] = workspace_id
         account_copy["instagram_user_id"] = ig_id
         account_copy["is_connected"] = True
@@ -208,6 +212,9 @@ async def get_instagram_account_status(
             "account": account_copy
         }
 
+    if account and "_id" in account:
+        account["_id"] = str(account["_id"])
+
     return {
         "is_connected": account.get("is_connected", False) if account else False,
         "account": account
@@ -227,6 +234,8 @@ async def sync_instagram_account_stats(
     account_doc = None
     if db is not None:
         account_doc = await db.instagram_accounts.find_one({"workspace_id": workspace_id})
+        if account_doc and "_id" in account_doc:
+            account_doc["_id"] = str(account_doc["_id"])
     if not account_doc:
         account_doc = _mock_account_cache.get(workspace_id, _mock_account_cache["default_workspace"])
 
@@ -242,6 +251,8 @@ async def sync_instagram_account_stats(
             {"workspace_id": workspace_id},
             {"$set": {"total_reel_plays": new_plays, "followers_count": new_followers, "last_synced_at": datetime.now(timezone.utc)}}
         )
+    if "_id" in account_doc:
+        account_doc["_id"] = str(account_doc["_id"])
     _mock_account_cache[workspace_id] = account_doc
 
     return {
