@@ -14,9 +14,9 @@ class Settings(BaseSettings):
     )
 
     # Meta / Instagram Graph API
-    meta_app_id: str = "mock_meta_app_id"
+    meta_app_id: str = "17841434697950977"
     meta_app_secret: str = "mock_meta_app_secret"
-    instagram_account_id: Optional[str] = None
+    instagram_account_id: Optional[str] = "17841434697950977"
     instagram_access_token: Optional[str] = None
     instagram_redirect_uri: str = "http://localhost:8000/api/auth/instagram/callback"
     instagram_api_version: str = "v19.0"
@@ -41,7 +41,7 @@ class Settings(BaseSettings):
         return self.instagram_account_id or "17841400000000001"
 
     # Database & Broker
-    mongodb_uri: str = "mongodb://localhost:27017"
+    mongodb_uri: str = "mongodb+srv://kbtteja456_db_user:sk8JAW7LzRixHXwR@cluster0.r3f7bqb.mongodb.net/?appName=Cluster0"
     mongodb_db_name: str = "instagram_autopilot"
     redis_url: str = "redis://localhost:6379/0"
 

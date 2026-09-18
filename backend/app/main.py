@@ -85,8 +85,10 @@ app.mount("/media", StaticFiles(directory=str(_media_dir)), name="media")
 async def health_check() -> dict[str, Any]:
     """Primary system health check returning hardware and operational stats."""
     metrics = resource_guard.get_system_metrics()
+    db_connected = AsyncMongoDB.get_db() is not None
     return {
         "status": "HEALTHY",
+        "database": "CONNECTED" if db_connected else "CONNECTING_FALLBACK",
         "app": "AI Instagram Reels Autopilot",
         "version": "1.0.0",
         "zero_cost_mode": settings.zero_cost_mode,
