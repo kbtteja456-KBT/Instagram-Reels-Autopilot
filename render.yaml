@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: instagram-autopilot-backend
+    runtime: docker
+    dockerfilePath: Dockerfile.backend
+    plan: free
+    region: oregon
+    healthCheckPath: /api/health
+    envVars:
+      - key: META_APP_ID
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: INSTAGRAM_ACCOUNT_ID
+        sync: false
+      - key: INSTAGRAM_ACCESS_TOKEN
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: nvidia/nemotron-3.5-lightning:free
+      - key: PEXELS_API_KEY
+        sync: false
+      - key: PIXABAY_API_KEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: instagram_autopilot
+      - key: PUBLIC_MEDIA_BASE_URL
+        fromService:
+          type: web
+          name: instagram-autopilot-backend
+          property: host
+      - key: TIMEZONE
+        value: Asia/Kolkata
+      - key: SLOT1_TIME
+        value: "07:00"
+      - key: SLOT2_TIME
+        value: "18:00"
+      - key: DAILY_REEL_LIMIT
+        value: "2"
+      - key: ZERO_COST_MODE
+        value: "true"

@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# Environment secrets (DO NOT COMMIT!)
+.env
+.env.local
+
+# Media storage & output videos
+media_storage/temp/
+media_storage/audio/
+media_storage/reels/
+*.mp4
+*.mp3
+*.ass
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.vite/
+
+# OS and IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

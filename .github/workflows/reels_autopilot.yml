@@ -1,0 +1,79 @@
+name: AI Instagram Reels Autopilot 24/7
+
+on:
+  schedule:
+    # 07:00 AM & 06:00 PM Asia/Kolkata (01:30 & 12:30 UTC)
+    - cron: '30 1,12 * * *'
+  workflow_dispatch:
+    inputs:
+      topic:
+        description: 'Reel Topic (Leave blank for autonomous AI topic)'
+        required: false
+        default: '3 Productivity Habits of High Performers'
+      niche:
+        description: 'Reel Niche'
+        required: false
+        default: 'Motivation & Success'
+
+jobs:
+  publish_reel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install System Dependencies (FFmpeg & Fonts)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-liberation jq curl
+
+      - name: Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Install and Launch ngrok Media Bridge
+        env:
+          NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
+        run: |
+          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+          sudo apt-get update && sudo apt-get install -y ngrok
+          ngrok config add-authtoken $NGROK_AUTHTOKEN
+          
+          # Start media backend server
+          python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 4
+
+          # Launch ngrok tunnel in background
+          ngrok http 8000 --log=stdout > ngrok.log &
+          sleep 4
+
+          # Extract public ngrok URL
+          NGROK_URL=$(curl -s http://127.0.0.1:4040/api/tunnels | jq -r '.tunnels[0].public_url')
+          echo "Detected public URL: $NGROK_URL"
+          echo "PUBLIC_MEDIA_BASE_URL=$NGROK_URL" >> $GITHUB_ENV
+
+      - name: Generate and Publish Reel to Instagram
+        env:
+          REEL_TOPIC: ${{ github.event.inputs.topic || '3 Productivity Habits of High Performers' }}
+          REEL_NICHE: ${{ github.event.inputs.niche || 'Motivation & Success' }}
+          INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          META_APP_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID }}
+          META_APP_SECRET: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: nvidia/nemotron-3.5-lightning:free
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          ZERO_COST_MODE: "true"
+        run: |
+          python scripts/publish_now.py

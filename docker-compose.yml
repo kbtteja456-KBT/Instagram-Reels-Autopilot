@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: instagram_autopilot_mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - autopilot_net
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: instagram_autopilot_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - autopilot_net
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: instagram_autopilot_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - REDIS_URL=redis://redis:6379/0
+      - MEDIA_STORAGE_DIR=/app/media_storage
+    volumes:
+      - ./media_storage:/app/media_storage
+      - ./.env:/app/.env
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - autopilot_net
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: instagram_autopilot_celery_worker
+    restart: unless-stopped
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - REDIS_URL=redis://redis:6379/0
+      - MEDIA_STORAGE_DIR=/app/media_storage
+    volumes:
+      - ./media_storage:/app/media_storage
+      - ./.env:/app/.env
+    depends_on:
+      - backend
+      - redis
+      - mongodb
+    networks:
+      - autopilot_net
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: instagram_autopilot_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - autopilot_net
+
+volumes:
+  mongo_data:
+  redis_data:
+
+networks:
+  autopilot_net:
+    driver: bridge
