@@ -35,6 +35,14 @@ _mock_users_db: Dict[str, Dict[str, Any]] = {
         "workspace_id": "default_workspace",
         "full_name": "Autopilot Creator",
         "role": "owner"
+    },
+    "kbtteja456@gmail.com": {
+        "id": "usr_kbtteja",
+        "email": "kbtteja456@gmail.com",
+        "hashed_password": hash_password("@bhanuteja89"),
+        "workspace_id": "default_workspace",
+        "full_name": "Bhanu Teja",
+        "role": "owner"
     }
 }
 

@@ -26,19 +26,18 @@ import {
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
-    // Default active session for instant local evaluation
     return {
-      id: 'usr_default_01',
-      email: 'creator@instagram-reels.local',
-      full_name: 'Reels Creator Pro',
+      id: 'usr_kbtteja',
+      email: 'kbtteja456@gmail.com',
+      full_name: 'Bhanu Teja',
       role: 'owner',
       is_owner: true,
       trial_quota: { videos_generated: 2, max_videos: 10 }
     };
   });
   const [currentWorkspace, setCurrentWorkspace] = useState<WorkspaceContext | null>({
-    id: 'ws_default',
-    name: "Reels Creator Pro's Workspace",
+    id: 'default_workspace',
+    name: "Bhanu Teja's Workspace",
     niche: 'AI & Modern Technology',
     is_legacy_default: true
   });
