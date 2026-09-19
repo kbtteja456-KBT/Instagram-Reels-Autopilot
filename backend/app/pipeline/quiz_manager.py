@@ -225,15 +225,46 @@ class QuizManager:
             )
 
     def get_posted_quiz_ids(self) -> List[str]:
-        """Return list of all quiz_ids that have already been posted."""
+        """Return list of all quiz_ids that have already been posted (from local cache and MongoDB Atlas)."""
+        posted_ids = set()
+
+        # 1. Local JSON file
         if self.posted_file.exists():
             try:
                 with open(self.posted_file, "r", encoding="utf-8") as f:
                     data = json.load(f)
-                    return [item.get("quiz_id") for item in data if "quiz_id" in item]
+                    for item in data:
+                        if item.get("quiz_id"):
+                            posted_ids.add(item["quiz_id"])
             except Exception as e:
-                logger.warning(f"[QuizManager] Read error: {e}")
-        return []
+                logger.warning(f"[QuizManager] Local read error: {e}")
+
+        # 2. MongoDB Atlas Cloud database (cross-machine / GitHub Actions runner sync)
+        try:
+            from pymongo import MongoClient
+            from backend.app.config import settings
+            if settings.mongodb_uri and not settings.mongodb_uri.startswith("mock"):
+                client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=3000)
+                db = client[settings.mongodb_db_name]
+                
+                # Check posted_quizzes collection
+                for doc in db.posted_quizzes.find({}, {"quiz_id": 1}):
+                    if doc.get("quiz_id"):
+                        posted_ids.add(doc["quiz_id"])
+
+                # Check reels collection by title matching
+                title_to_id = {q["title"].lower(): q["quiz_id"] for q in CURATED_QUIZZES}
+                for doc in db.reels.find({"status": "PUBLISHED"}, {"title": 1}):
+                    t = (doc.get("title") or "").lower()
+                    if t in title_to_id:
+                        posted_ids.add(title_to_id[t])
+                    for q in CURATED_QUIZZES:
+                        if q["quiz_id"] in t or any(k in t for k in q["quiz_id"].split("_")):
+                            posted_ids.add(q["quiz_id"])
+        except Exception as e:
+            logger.warning(f"[QuizManager] MongoDB sync note: {e}")
+
+        return list(posted_ids)
 
     def is_posted(self, quiz_id: str) -> bool:
         """Check if a quiz has already been posted to Instagram."""
@@ -247,7 +278,7 @@ class QuizManager:
         instagram_url: str,
         file_path: Optional[str] = None
     ) -> None:
-        """Record a posted quiz to prevent it from ever being posted again."""
+        """Record a posted quiz in both local cache and MongoDB Atlas to prevent duplicates."""
         posted_data = []
         if self.posted_file.exists():
             try:
@@ -256,22 +287,39 @@ class QuizManager:
             except Exception:
                 posted_data = []
 
-        # Avoid duplicate entries in local history
-        if any(item.get("quiz_id") == quiz_id for item in posted_data):
-            return
+        if not any(item.get("quiz_id") == quiz_id for item in posted_data):
+            record = {
+                "quiz_id": quiz_id,
+                "title": title,
+                "media_id": media_id,
+                "instagram_url": instagram_url,
+                "file_path": file_path,
+                "posted_at": datetime.now(timezone.utc).isoformat()
+            }
+            posted_data.append(record)
+            with open(self.posted_file, "w", encoding="utf-8") as f:
+                json.dump(posted_data, f, indent=2)
 
-        record = {
-            "quiz_id": quiz_id,
-            "title": title,
-            "media_id": media_id,
-            "instagram_url": instagram_url,
-            "file_path": file_path,
-            "posted_at": datetime.now(timezone.utc).isoformat()
-        }
-        posted_data.append(record)
-
-        with open(self.posted_file, "w", encoding="utf-8") as f:
-            json.dump(posted_data, f, indent=2)
+        # Sync to MongoDB Atlas cloud database
+        try:
+            from pymongo import MongoClient
+            from backend.app.config import settings
+            if settings.mongodb_uri and not settings.mongodb_uri.startswith("mock"):
+                client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=3000)
+                db = client[settings.mongodb_db_name]
+                db.posted_quizzes.update_one(
+                    {"quiz_id": quiz_id},
+                    {"$set": {
+                        "quiz_id": quiz_id,
+                        "title": title,
+                        "media_id": str(media_id),
+                        "instagram_url": str(instagram_url),
+                        "posted_at": datetime.now(timezone.utc).isoformat()
+                    }},
+                    upsert=True
+                )
+        except Exception as e:
+            logger.warning(f"[QuizManager] MongoDB write note: {e}")
 
         logger.info(f"[QuizManager] Registered posted quiz '{quiz_id}' to prevent duplicates.")
 
