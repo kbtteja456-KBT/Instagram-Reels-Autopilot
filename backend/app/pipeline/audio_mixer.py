@@ -11,42 +11,95 @@ from backend.app.config import settings
 from backend.app.core.ffmpeg_utils import get_ffmpeg_binary
 from backend.app.core.logging import logger
 
-# Royalty-free chill lo-fi background music URL
-LOFI_MUSIC_URL = "https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3"
+# Curated viral royalty-free background tracks for high-retention Reels
+VIRAL_TRACKS = [
+    {
+        "filename": "incompetech_sneaky_snitch.mp3",
+        "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sneaky%20Snitch.mp3",
+        "title": "Sneaky Snitch (Suspense & Thinking Beat)"
+    },
+    {
+        "filename": "incompetech_pixel_peeker_polka.mp3",
+        "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pixel%20Peeker%20Polka%20-%20faster.mp3",
+        "title": "Pixel Peeker Polka (8-Bit Fast Tech Beat)"
+    },
+    {
+        "filename": "incompetech_monkeys_spinning.mp3",
+        "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Monkeys%20Spinning%20Monkeys.mp3",
+        "title": "Monkeys Spinning Monkeys (Upbeat Viral Rhythm)"
+    },
+    {
+        "filename": "incompetech_investigations.mp3",
+        "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Investigations.mp3",
+        "title": "Investigations (Curiosity & Mystery Beat)"
+    },
+    {
+        "filename": "incompetech_carefree.mp3",
+        "url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
+        "title": "Carefree (Upbeat Fun Beat)"
+    }
+]
+
+import random
 
 
 class AudioMixer:
     """Combines neural TTS voiceover with background music using FFmpeg."""
 
+    _track_rotation_index: int = 0
+
     def __init__(self):
         self.ffmpeg_bin = get_ffmpeg_binary()
         self.assets_dir = Path(settings.media_storage_dir) / "assets"
         self.assets_dir.mkdir(parents=True, exist_ok=True)
+        self.music_pool_dir = self.assets_dir / "music_pool"
+        self.music_pool_dir.mkdir(parents=True, exist_ok=True)
         self.cached_music_path = self.assets_dir / "lofi_bg_music.mp3"
 
     def ensure_background_music(self) -> str:
-        """Download and cache background lo-fi music if not already present."""
-        if not self.cached_music_path.exists() or self.cached_music_path.stat().st_size < 10000:
-            logger.info("[AudioMixer] Downloading royalty-free lo-fi background music...")
-            try:
-                headers = {"User-Agent": "Mozilla/5.0"}
-                req = urllib.request.Request(LOFI_MUSIC_URL, headers=headers)
-                with urllib.request.urlopen(req, timeout=30) as resp:
-                    with open(self.cached_music_path, "wb") as f:
-                        f.write(resp.read())
-                logger.info(f"[AudioMixer] Saved background music to {self.cached_music_path}")
-            except Exception as e:
-                logger.warning(f"[AudioMixer] Failed downloading background music: {e}. Generating procedural ambient tone.")
-                self._generate_fallback_ambient(str(self.cached_music_path), duration_sec=40)
-        return str(self.cached_music_path)
+        """Select a fresh, upbeat viral background track from the music pool.
+        Falls back to downloading iconic royalty-free tracks if pool is empty.
+        """
+        # 1. Check local music pool for available MP3s
+        available_tracks = sorted(list(self.music_pool_dir.glob("*.mp3")))
+
+        if available_tracks:
+            # Rotate across available tracks so each video gets a fresh, exciting vibe
+            idx = AudioMixer._track_rotation_index % len(available_tracks)
+            AudioMixer._track_rotation_index += 1
+            chosen_track = available_tracks[idx]
+            logger.info(f"[AudioMixer] Selected upbeat music track ({idx + 1}/{len(available_tracks)}): {chosen_track.name}")
+            return str(chosen_track)
+
+        # 2. Check if default cached track exists and is valid
+        if self.cached_music_path.exists() and self.cached_music_path.stat().st_size > 50000:
+            return str(self.cached_music_path)
+
+        # 3. Download premier viral track (Sneaky Snitch) if pool is empty
+        primary = VIRAL_TRACKS[0]
+        target_path = self.music_pool_dir / primary["filename"]
+        try:
+            logger.info(f"[AudioMixer] Downloading viral track '{primary['title']}'...")
+            headers = {"User-Agent": "Mozilla/5.0"}
+            req = urllib.request.Request(primary["url"], headers=headers)
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                with open(target_path, "wb") as f:
+                    f.write(resp.read())
+            logger.info(f"[AudioMixer] Saved background music to {target_path}")
+            return str(target_path)
+        except Exception as e:
+            logger.warning(f"[AudioMixer] Failed downloading background music: {e}. Generating procedural ambient beat.")
+            fallback_path = str(self.music_pool_dir / "fallback_beat.mp3")
+            self._generate_fallback_ambient(fallback_path, duration_sec=40)
+            return fallback_path
 
     def _generate_fallback_ambient(self, out_path: str, duration_sec: int = 40):
-        """Generate subtle chill ambient audio using FFmpeg aevalsrc if offline."""
+        """Generate upbeat rhythmic chord progression using FFmpeg if completely offline."""
         cmd = [
             self.ffmpeg_bin, "-y",
             "-f", "lavfi",
-            "-i", f"sine=frequency=220:sample_rate=44100:duration={duration_sec}",
-            "-filter_complex", "volume=0.08,lowpass=f=400",
+            "-i", f"sine=frequency=440:sample_rate=44100:duration={duration_sec}",
+            "-filter_complex", "volume=0.08,lowpass=f=800,atempo=1.2",
             out_path
         ]
         subprocess.run(cmd, capture_output=True)
