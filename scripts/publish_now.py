@@ -44,22 +44,44 @@ async def main():
     await AsyncMongoDB.connect()
 
     orchestrator = create_default_orchestrator()
-    result = await orchestrator.execute_full_flow(
-        topic=topic,
-        niche=niche,
-        publish_immediately=True,
-        dry_run=dry_run
-    )
+    max_retries = 3
+    result = None
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            print(f"\n⚡ Execution Attempt {attempt}/{max_retries}...")
+            result = await orchestrator.execute_full_flow(
+                topic=topic,
+                niche=niche,
+                publish_immediately=True,
+                dry_run=dry_run
+            )
+            if result and result.get("status") in ["PUBLISHED", "READY"]:
+                print(f"✅ Success on attempt {attempt}!")
+                break
+            else:
+                raise RuntimeError(f"Run ended with unexpected status: {result.get('status')}")
+        except Exception as e:
+            print(f"⚠️ Attempt {attempt} failed: {e}")
+            if attempt < max_retries:
+                backoff_sec = attempt * 30
+                print(f"⏳ Waiting {backoff_sec} seconds before retrying...")
+                await asyncio.sleep(backoff_sec)
+            else:
+                print("❌ All retry attempts exhausted.")
+                raise e
 
     print("\n" + "=" * 60)
     print("🎉 Pipeline Run Finished!")
-    print(f"Status: {result.get('status')}")
-    print(f"Title: {result.get('title')}")
-    print(f"Quality Score: {result.get('quality_score')}")
-    if result.get("instagram_url"):
-        print(f"Instagram URL: {result.get('instagram_url')}")
+    if result:
+        print(f"Status: {result.get('status')}")
+        print(f"Title: {result.get('title')}")
+        print(f"Quality Score: {result.get('quality_score')}")
+        if result.get("instagram_url"):
+            print(f"Instagram URL: {result.get('instagram_url')}")
     print("=" * 60)
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+

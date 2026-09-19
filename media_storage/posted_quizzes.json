@@ -1,0 +1,26 @@
+[
+  {
+    "quiz_id": "set_comprehension_modulo",
+    "title": "Python Quiz: Set Comprehension & Sorting",
+    "media_id": "18061233950716294",
+    "instagram_url": "https://www.instagram.com/reel/DddT8CnEttO/",
+    "file_path": null,
+    "posted_at": "2026-09-19T05:59:34.465788+00:00"
+  },
+  {
+    "quiz_id": "mutable_default_argument",
+    "title": "Python Gotcha: Mutable Default Arguments",
+    "media_id": "18115509007803757",
+    "instagram_url": "https://www.instagram.com/reel/DddUY1dkjfX/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_mutable_default_argument_20260919_112934.mp4",
+    "posted_at": "2026-09-19T06:01:44.776103+00:00"
+  },
+  {
+    "quiz_id": "is_vs_equality_slicing",
+    "title": "Python Quiz: 'is' vs '==' Identity Trap",
+    "media_id": "17955384405251287",
+    "instagram_url": "https://www.instagram.com/reel/DddVPDrEmb4/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_is_vs_equality_slicing_20260919_113814.mp4",
+    "posted_at": "2026-09-19T06:09:13.692739+00:00"
+  }
+]

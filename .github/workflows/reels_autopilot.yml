@@ -53,3 +53,12 @@ jobs:
           ZERO_COST_MODE: "true"
         run: |
           python scripts/publish_now.py
+
+      - name: On Failure Alert & Diagnostics
+        if: failure()
+        run: |
+          echo "::error::Reel generation or Instagram publishing failed!"
+          echo "Troubleshooting steps:"
+          echo "1. Check if Instagram access token has expired."
+          echo "2. Check if Meta Graph API is experiencing transient rate limits."
+          echo "3. Run 'python scripts/catch_up_missed_slots.py' locally to auto-recover any missed reels."

@@ -4,9 +4,23 @@ cd /d "%~dp0"
 echo =========================================================
 echo Starting AI Instagram Reels Autopilot 24/7 Engine
 echo =========================================================
-docker compose up -d
-echo Services running in background!
-echo Backend: http://localhost:8000
-echo Frontend: http://localhost:3000
+
+where docker >nul 2>&1
+if %ERRORLEVEL% EQU 0 (
+    echo [Launcher] Docker detected. Launching containers...
+    docker compose up -d
+) else (
+    echo [Launcher] Docker not found. Starting local Python 24/7 backend and frontend...
+    start "Instagram Autopilot Backend (Port 8000)" cmd /k "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload"
+    if exist "frontend\node_modules" (
+        start "Instagram Autopilot Frontend (Port 3000)" cmd /k "cd frontend && npm run dev"
+    )
+)
+
+echo.
+echo =========================================================
+echo Autopilot Services Started!
+echo Backend API & 24/7 Scheduler: http://localhost:8000
+echo Frontend Dashboard:          http://localhost:3000
 echo =========================================================
 pause
