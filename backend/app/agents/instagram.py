@@ -37,13 +37,21 @@ class InstagramAgent(BaseAgent):
 
         filename = os.path.basename(video_filepath)
 
-        # 2. Container Creation
-        self.log("[Stage 1/4] Creating Meta Reels video container...")
-        creation_id = await self.client.create_reel_container(
-            video_filename=filename,
-            caption=caption,
-            cover_image_url=cover_image_url
-        )
+        # 2. Container Creation (Resumable Direct Binary Upload first)
+        creation_id = None
+        try:
+            self.log("[Stage 1/4] Uploading video binary directly to Meta via Resumable Upload (No tunnel needed)...")
+            creation_id = await self.client.create_reel_container_resumable(
+                video_filepath=video_filepath,
+                caption=caption
+            )
+        except Exception as resumable_err:
+            self.log(f"Direct resumable upload notice: {resumable_err}. Falling back to hosted URL container...", level="WARNING")
+            creation_id = await self.client.create_reel_container(
+                video_filename=filename,
+                caption=caption,
+                cover_image_url=cover_image_url
+            )
 
         # 3. Status Polling
         self.log(f"[Stage 2/4] Polling container {creation_id} for transcoding completion...")

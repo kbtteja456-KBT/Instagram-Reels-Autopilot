@@ -13,10 +13,30 @@ def run_scheduled_slot_task(slot_index: int):
     logger.info(f"[Celery] Executing scheduled slot {slot_index} Reel pipeline...")
     
     async def _async_exec():
+        from backend.app.config import settings
+        from backend.app.agents.idea import IdeaAgent
+        
+        active_niche = getattr(settings, "niche", "python program quiz card reels")
+        try:
+            from backend.app.core.db import AsyncMongoDB
+            db = AsyncMongoDB.get_db()
+            if db is not None:
+                doc = await db.settings.find_one({"workspace_id": "default_workspace"})
+                if doc and doc.get("niche"):
+                    active_niche = doc["niche"]
+        except Exception:
+            pass
+
+        idea_agent = IdeaAgent()
+        ideas = await idea_agent.generate_ideas(niche=active_niche, count=3)
+        topic = "Tricky Python Quiz: What does print([1, 2] * 2) output?"
+        if ideas and isinstance(ideas, list) and len(ideas) > 0:
+            topic = ideas[0].get("topic", topic)
+
         orchestrator = create_default_orchestrator()
         return await orchestrator.execute_full_flow(
-            topic="Top 3 Breakthrough Technologies Shaping 2026",
-            niche="Technology & AI",
+            topic=topic,
+            niche=active_niche,
             publish_immediately=True,
             slot_index=slot_index
         )

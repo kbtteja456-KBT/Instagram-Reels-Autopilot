@@ -132,29 +132,65 @@ async def publish_existing_reel(
     video_id: str,
     user: Dict[str, Any] = Depends(get_optional_current_user)
 ) -> Dict[str, Any]:
-    """Publish a READY video to Instagram using the 2-step containerized flow."""
+    """Publish a READY or RENDERED video to Instagram using the 2-step containerized flow."""
     logger.info(f"[VideosAPI] Publishing Reel {video_id} to Instagram...")
     
-    # Locate reel
     target = None
-    for r in _mock_reels_store:
-        if r["_id"] == video_id or r.get("job_id") == video_id:
-            target = r
-            break
+    db = AsyncMongoDB.get_db()
+    
+    # 1. Search in MongoDB reels collection
+    if db is not None:
+        try:
+            from bson import ObjectId
+            if ObjectId.is_valid(video_id):
+                target = await db.reels.find_one({"_id": ObjectId(video_id)})
+            if not target:
+                target = await db.reels.find_one({"job_id": video_id})
+        except Exception as e:
+            logger.warning(f"[VideosAPI] DB search failed for {video_id}: {e}")
+
+    # 2. Fallback to mock store
+    if not target:
+        for r in _mock_reels_store:
+            if r["_id"] == video_id or r.get("job_id") == video_id:
+                target = r
+                break
 
     if not target:
-        raise HTTPException(status_code=404, detail="Reel not found.")
+        raise HTTPException(status_code=404, detail=f"Reel '{video_id}' not found.")
 
+    from backend.app.config import settings
     from backend.app.providers.instagram.instagram_client import InstagramClient
     from backend.app.agents.instagram import InstagramAgent
 
-    client = InstagramClient(access_token="mock_user_token", ig_user_id="17841400000000001")
+    client = InstagramClient(
+        access_token=settings.effective_instagram_token,
+        ig_user_id=settings.effective_instagram_account_id
+    )
     agent = InstagramAgent(client)
 
+    file_path = target.get("file_path", "")
+    caption = target.get("caption", "Python Quiz Reel #python #coding #quiz")
+
     result = await agent.publish_reel(
-        video_filepath=target.get("file_path", "./media_storage/reels/reel.mp4"),
-        caption=target.get("caption", "Viral Instagram Reel #reels")
+        video_filepath=file_path,
+        caption=caption
     )
+
+    # Update MongoDB if connected
+    if db is not None and "_id" in target:
+        try:
+            await db.reels.update_one(
+                {"_id": target["_id"]},
+                {"$set": {
+                    "status": "PUBLISHED",
+                    "instagram_media_id": result["instagram_media_id"],
+                    "instagram_url": result["instagram_url"],
+                    "instagram_published_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        except Exception as e:
+            logger.warning(f"[VideosAPI] Failed to update published reel in DB: {e}")
 
     target["status"] = "PUBLISHED"
     target["instagram_media_id"] = result["instagram_media_id"]
@@ -165,3 +201,4 @@ async def publish_existing_reel(
         "instagram_media_id": result["instagram_media_id"],
         "instagram_url": result["instagram_url"]
     }
+

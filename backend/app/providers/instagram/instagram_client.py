@@ -107,6 +107,65 @@ class InstagramClient:
 
                 await asyncio.sleep(poll_interval)
 
+    async def create_reel_container_resumable(
+        self,
+        video_filepath: str,
+        caption: str,
+        share_to_feed: bool = True
+    ) -> str:
+        """Upload Reel using Meta's official direct resumable upload protocol to rupload.facebook.com.
+        Zero dependency on public tunnels (ngrok) or static domains.
+        """
+        if self.access_token.startswith("mock_"):
+            logger.info("[MetaClient:Mock] Simulating resumable upload...")
+            return "mock_creation_id_178499281729102"
+
+        if not os.path.exists(video_filepath):
+            raise InstagramPublishingError(f"Video file not found at: {video_filepath}")
+
+        file_size = os.path.getsize(video_filepath)
+        url = f"{self.base_url}/{self.ig_user_id}/media"
+
+        init_payload = {
+            "upload_type": "resumable",
+            "media_type": "REELS",
+            "caption": caption,
+            "share_to_feed": "true" if share_to_feed else "false",
+            "access_token": self.access_token
+        }
+
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            resp = await client.post(url, data=init_payload)
+            data = resp.json()
+            if "error" in data:
+                err = data["error"]
+                raise InstagramPublishingError(
+                    message=f"Meta resumable container init failed: {err.get('message')}",
+                    meta_code=err.get("code"),
+                    details=err
+                )
+            creation_id = data.get("id")
+            rupload_uri = data.get("uri") or f"https://rupload.facebook.com/ig-api-upload/{self.api_version}/{creation_id}"
+
+            logger.info(f"[MetaClient] Initialized resumable container {creation_id}. Uploading {file_size} bytes to rupload.facebook.com...")
+
+            headers = {
+                "Authorization": f"OAuth {self.access_token}",
+                "offset": "0",
+                "file_size": str(file_size),
+                "Content-Type": "application/octet-stream"
+            }
+            with open(video_filepath, "rb") as f:
+                content = f.read()
+
+            upload_resp = await client.post(rupload_uri, headers=headers, content=content, timeout=180.0)
+            if upload_resp.status_code != 200:
+                raise InstagramPublishingError(
+                    f"Meta rupload failed with status {upload_resp.status_code}: {upload_resp.text}"
+                )
+            logger.info(f"[MetaClient] Video binary uploaded successfully to container: {creation_id}")
+            return str(creation_id)
+
     async def publish_container(self, creation_id: str) -> str:
         """Step 3: Publish the ready container to the Instagram profile."""
         if self.access_token.startswith("mock_") or creation_id.startswith("mock_"):
@@ -119,7 +178,7 @@ class InstagramClient:
             "access_token": self.access_token
         }
 
-        async with httpx.AsyncClient(timeout=45.0) as client:
+        async with httpx.AsyncClient(timeout=90.0) as client:
             resp = await client.post(url, data=payload)
             data = resp.json()
             if "error" in data:

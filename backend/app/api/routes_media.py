@@ -10,7 +10,7 @@ from backend.app.core.logging import logger
 router = APIRouter(prefix="/media", tags=["media"])
 
 
-@router.get("/download/{filename}")
+@router.api_route("/download/{filename}", methods=["GET", "HEAD"])
 async def download_rendered_reel(filename: str, request: Request):
     """Serve rendered MP4 files for Meta Graph API container ingestion.
     Meta's servers require a publicly accessible URL with byte-range and video/mp4 content type.

@@ -12,9 +12,25 @@ from backend.app.pipeline.orchestrator import create_default_orchestrator
 
 
 async def main():
-    topic = os.getenv("REEL_TOPIC", "3 High-Performance Habits of Successful Creators")
-    niche = os.getenv("REEL_NICHE", "Motivation & Success")
+    if sys.platform == "win32":
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+            sys.stderr.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
+    niche = os.getenv("REEL_NICHE", getattr(settings, "niche", "python program quiz card reels"))
+    topic = os.getenv("REEL_TOPIC", "")
     dry_run = os.getenv("DRY_RUN", "false").lower() == "true"
+
+    if not topic:
+        from backend.app.agents.idea import IdeaAgent
+        idea_agent = IdeaAgent()
+        ideas = await idea_agent.generate_ideas(niche=niche, count=3)
+        if ideas and isinstance(ideas, list) and len(ideas) > 0:
+            topic = ideas[0].get("topic", "Python Quiz: What is the output of print([1, 2] * 2)?")
+        else:
+            topic = "Python Quiz: What is the output of print([1, 2] * 2)?"
 
     print("=" * 60)
     print(f"🚀 AI Instagram Reels Autopilot — Runner")
@@ -23,6 +39,9 @@ async def main():
     print(f"Niche: {niche}")
     print(f"Dry Run: {dry_run}")
     print("=" * 60)
+
+    from backend.app.core.db import AsyncMongoDB
+    await AsyncMongoDB.connect()
 
     orchestrator = create_default_orchestrator()
     result = await orchestrator.execute_full_flow(

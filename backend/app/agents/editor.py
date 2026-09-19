@@ -62,6 +62,7 @@ class EditorAgent(BaseAgent):
             "-c:a", "aac",
             "-b:a", "192k",
             "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
             "-shortest",
             final_mp4
         ]
@@ -85,6 +86,7 @@ class EditorAgent(BaseAgent):
                 "-c:a", "aac",
                 "-b:a", "192k",
                 "-pix_fmt", "yuv420p",
+                "-movflags", "+faststart",
                 "-shortest",
                 final_mp4
             ]
