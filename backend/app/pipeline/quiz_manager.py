@@ -200,6 +200,195 @@ CURATED_QUIZZES = [
             "👉 Save & follow for daily Python challenges!\n"
             "#python #coding #programming #developer #pythonquiz #softwareengineer #tech"
         )
+    },
+    {
+        "quiz_id": "tuple_mutation_gotcha",
+        "title": "Python Gotcha: Mutating List inside Tuple",
+        "question": "What is the output of this code?",
+        "file_tab": "tuple_bug.py",
+        "code": "t = (1, 2, [3, 4])\ntry:\n    t[2] += [5]\nexcept TypeError:\n    pass\nprint(t[2])",
+        "badge_text": "Tuple Gotcha!",
+        "options": [
+            {"letter": "A", "text": "[3, 4]"},
+            {"letter": "B", "text": "[3, 4, 5]"},
+            {"letter": "C", "text": "TypeError"},
+            {"letter": "D", "text": "None"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- '+=' modifies list in-place BEFORE tuple assignment fails!",
+            "- The list gets [5] appended despite the TypeError exception"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Gotcha: What is the output of this code?\n\n```python\nt = (1, 2, [3, 4])\ntry:\n    t[2] += [5]\nexcept TypeError:\n    pass\nprint(t[2])\n```\n\nComment your guess before time runs out! 👇\nOption A: [3, 4]\nOption B: [3, 4, 5]\nOption C: TypeError\nOption D: None\n\n💡 Explanation: In Python, '+=' extends the inner list in-place first, then attempts to assign back to the tuple which raises TypeError! So [5] is added!\n\n👉 Follow for daily Python quizzes!\n#python #coding #programming #developer #pythonquiz"
+    },
+    {
+        "quiz_id": "string_step_slicing",
+        "title": "Python Quiz: Negative Step String Slicing",
+        "question": "What is the output of this code?",
+        "file_tab": "slicing.py",
+        "code": "s = 'PYTHON'\nprint(s[::-2])",
+        "badge_text": "String Slicing!",
+        "options": [
+            {"letter": "A", "text": "'NTP'"},
+            {"letter": "B", "text": "'NHY'"},
+            {"letter": "C", "text": "'PYT'"},
+            {"letter": "D", "text": "'NOT'"}
+        ],
+        "correct_idx": 0,
+        "explanation_lines": [
+            "- Step '-2' traverses backwards from end taking every 2nd char",
+            "- 'PYTHON': indices 5('N'), 3('T'), 1('P') -> 'NTP'"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Quiz: What is the output of this code?\n\n```python\ns = 'PYTHON'\nprint(s[::-2])\n```\n\nComment your answer before the reveal! 👇\nOption A: 'NTP'\nOption B: 'NHY'\nOption C: 'PYT'\nOption D: 'NOT'\n\n💡 Explanation: The slice [::-2] starts from the last character 'N' and steps backwards by 2: 'N', then 'T', then 'P' -> 'NTP'!\n\n👉 Save & follow for daily quizzes!\n#python #coding #programming #developer #quiz"
+    },
+    {
+        "quiz_id": "generator_exhaustion",
+        "title": "Python Gotcha: Generator Exhaustion",
+        "question": "What is the output of this code?",
+        "file_tab": "gen.py",
+        "code": "g = (x * 2 for x in range(3))\nprint(list(g), list(g))",
+        "badge_text": "Generators!",
+        "options": [
+            {"letter": "A", "text": "[0, 2, 4] [0, 2, 4]"},
+            {"letter": "B", "text": "[0, 2, 4] []"},
+            {"letter": "C", "text": "[] []"},
+            {"letter": "D", "text": "TypeError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- Generators can only be consumed once!",
+            "- Second list(g) call returns empty list []"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Gotcha: What is the output of this code?\n\n```python\ng = (x * 2 for x in range(3))\nprint(list(g), list(g))\n```\n\nDrop your guess! 👇\nOption A: [0, 2, 4] [0, 2, 4]\nOption B: [0, 2, 4] []\nOption C: [] []\nOption D: TypeError\n\n💡 Explanation: Python generators are one-time iterators. After the first list(g) consumes all values, subsequent iterations yield empty []!\n\n👉 Follow for daily Python quizzes!\n#python #coding #programming #developer #pythonquiz"
+    },
+    {
+        "quiz_id": "all_any_empty_list",
+        "title": "Python Trap: all([]) and any([])",
+        "question": "What is the output of this code?",
+        "file_tab": "truthy.py",
+        "code": "print(all([]), any([]))",
+        "badge_text": "Vacuous Truth!",
+        "options": [
+            {"letter": "A", "text": "True False"},
+            {"letter": "B", "text": "False False"},
+            {"letter": "C", "text": "True True"},
+            {"letter": "D", "text": "False True"}
+        ],
+        "correct_idx": 0,
+        "explanation_lines": [
+            "- all([]) is True (vacuous truth: no element is falsy)",
+            "- any([]) is False (no element is truthy)"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Trap: What is the output of this code?\n\n```python\nprint(all([]), any([]))\n```\n\nCan you get this right? 👇\nOption A: True False\nOption B: False False\nOption C: True True\nOption D: False True\n\n💡 Explanation: all([]) returns True (vacuously true because no item is False), while any([]) returns False because no item is True!\n\n👉 Follow for daily Python quizzes!\n#python #coding #developer #quiz"
+    },
+    {
+        "quiz_id": "integer_interning_256",
+        "title": "Python Trap: Integer Caching / Interning",
+        "question": "What is the output of this code?",
+        "file_tab": "intern.py",
+        "code": "x = 256\ny = 256\nprint(x is y)",
+        "badge_text": "Memory Interning!",
+        "options": [
+            {"letter": "A", "text": "True"},
+            {"letter": "B", "text": "False"},
+            {"letter": "C", "text": "TypeError"},
+            {"letter": "D", "text": "None"}
+        ],
+        "correct_idx": 0,
+        "explanation_lines": [
+            "- CPython pre-allocates small integers from -5 to 256",
+            "- Both x and y point to the exact same memory object"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Trap: What is the output of this code?\n\n```python\nx = 256\ny = 256\nprint(x is y)\n```\n\nOption A: True\nOption B: False\nOption C: TypeError\nOption D: None\n\n💡 Explanation: CPython caches small integers between -5 and 256, so x is y evaluates to True! (Values > 256 allocate new objects!)\n\n👉 Follow for daily Python quizzes!\n#python #coding #programming #developer"
+    },
+    {
+        "quiz_id": "list_multiplication_reference",
+        "title": "Python Gotcha: Nested List Multiplication",
+        "question": "What is the output of this code?",
+        "file_tab": "nested.py",
+        "code": "grid = [[0]] * 2\ngrid[0][0] = 1\nprint(grid[1][0])",
+        "badge_text": "Reference Trap!",
+        "options": [
+            {"letter": "A", "text": "0"},
+            {"letter": "B", "text": "1"},
+            {"letter": "C", "text": "[[1]]"},
+            {"letter": "D", "text": "IndexError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- '*' copies inner list references, not copies of data!",
+            "- Modifying grid[0] modifies the same inner list in grid[1]"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Gotcha: What is the output of this code?\n\n```python\ngrid = [[0]] * 2\ngrid[0][0] = 1\nprint(grid[1][0])\n```\n\nComment your answer! 👇\nOption A: 0\nOption B: 1\nOption C: [[1]]\nOption D: IndexError\n\n💡 Explanation: Multiplying a list containing a list copies the reference, NOT the list. Both rows point to the exact same object, so grid[1][0] is 1!\n\n👉 Follow for daily quizzes!\n#python #coding #developer #quiz"
+    },
+    {
+        "quiz_id": "dict_get_default_val",
+        "title": "Python Quiz: dict.get() with None",
+        "question": "What is the output of this code?",
+        "file_tab": "dict_get.py",
+        "code": "d = {'a': None}\nprint(d.get('a', 1), d.get('b', 1))",
+        "badge_text": "dict.get Gotcha!",
+        "options": [
+            {"letter": "A", "text": "None 1"},
+            {"letter": "B", "text": "1 1"},
+            {"letter": "C", "text": "None None"},
+            {"letter": "D", "text": "KeyError"}
+        ],
+        "correct_idx": 0,
+        "explanation_lines": [
+            "- 'a' exists in d with value None, so get('a', 1) returns None",
+            "- 'b' does NOT exist, so get('b', 1) returns default 1"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Quiz: What is the output of this code?\n\n```python\nd = {'a': None}\nprint(d.get('a', 1), d.get('b', 1))\n```\n\nComment your guess! 👇\nOption A: None 1\nOption B: 1 1\nOption C: None None\nOption D: KeyError\n\n💡 Explanation: dict.get(key, default) only returns the default if key is MISSING from dictionary! Since 'a' is present, it returns None!\n\n👉 Follow for daily Python quizzes!\n#python #coding #programming"
+    },
+    {
+        "quiz_id": "finally_return_override",
+        "title": "Python Trap: finally Block Return Override",
+        "question": "What is the output of this code?",
+        "file_tab": "try_finally.py",
+        "code": "def func():\n    try:\n        return 1\n    finally:\n        return 2\n\nprint(func())",
+        "badge_text": "finally overrides!",
+        "options": [
+            {"letter": "A", "text": "1"},
+            {"letter": "B", "text": "2"},
+            {"letter": "C", "text": "3"},
+            {"letter": "D", "text": "TypeError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- finally blocks ALWAYS execute before returning",
+            "- A return in finally overrides any return in try!"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Trap: What is the output of this code?\n\n```python\ndef func():\n    try:\n        return 1\n    finally:\n        return 2\n\nprint(func())\n```\n\nCan you solve this? 👇\nOption A: 1\nOption B: 2\nOption C: 3\nOption D: TypeError\n\n💡 Explanation: A return statement inside a finally block takes precedence and overrides any return or exception raised in the try block!\n\n👉 Follow for daily Python quizzes!\n#python #coding #developer #quiz"
+    },
+    {
+        "quiz_id": "float_precision_03",
+        "title": "Python Quiz: Floating Point Precision",
+        "question": "What is the output of this code?",
+        "file_tab": "floats.py",
+        "code": "print(0.1 + 0.2 == 0.3)",
+        "badge_text": "IEEE 754 Floats!",
+        "options": [
+            {"letter": "A", "text": "True"},
+            {"letter": "B", "text": "False"},
+            {"letter": "C", "text": "0.30000000000000004"},
+            {"letter": "D", "text": "SyntaxError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- 0.1 + 0.2 evaluates to 0.30000000000000004 in binary float",
+            "- So 0.1 + 0.2 == 0.3 evaluates to False!"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Quiz: What is the output of this code?\n\n```python\nprint(0.1 + 0.2 == 0.3)\n```\n\nTrue or False? 👇\nOption A: True\nOption B: False\nOption C: 0.30000000000000004\nOption D: SyntaxError\n\n💡 Explanation: Due to IEEE 754 binary floating-point representation, 0.1 + 0.2 is actually 0.30000000000000004, so equality with 0.3 is False!\n\n👉 Follow for daily quizzes!\n#python #coding #programming #developer"
     }
 ]
 
