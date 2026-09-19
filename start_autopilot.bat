@@ -11,16 +11,16 @@ if %ERRORLEVEL% EQU 0 (
     docker compose up -d
 ) else (
     echo [Launcher] Docker not found. Starting local Python 24/7 backend and frontend...
-    start "Instagram Autopilot Backend (Port 8000)" cmd /k "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload"
+    start "Instagram Autopilot Backend (Port 8001)" cmd /k "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8001 --reload"
     if exist "frontend\node_modules" (
-        start "Instagram Autopilot Frontend (Port 3000)" cmd /k "cd frontend && npm run dev"
+        start "Instagram Autopilot Frontend (Port 3001)" cmd /k "cd frontend && npm run dev"
     )
 )
 
 echo.
 echo =========================================================
 echo Autopilot Services Started!
-echo Backend API & 24/7 Scheduler: http://localhost:8000
-echo Frontend Dashboard:          http://localhost:3000
+echo Backend API & 24/7 Scheduler: http://localhost:8001
+echo Frontend Dashboard:          http://localhost:3001
 echo =========================================================
 pause
