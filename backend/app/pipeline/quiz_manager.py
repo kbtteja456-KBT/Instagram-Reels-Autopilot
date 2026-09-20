@@ -389,6 +389,159 @@ CURATED_QUIZZES = [
         ],
         "narration": "",
         "caption": "🔥 Python Quiz: What is the output of this code?\n\n```python\nprint(0.1 + 0.2 == 0.3)\n```\n\nTrue or False? 👇\nOption A: True\nOption B: False\nOption C: 0.30000000000000004\nOption D: SyntaxError\n\n💡 Explanation: Due to IEEE 754 binary floating-point representation, 0.1 + 0.2 is actually 0.30000000000000004, so equality with 0.3 is False!\n\n👉 Follow for daily quizzes!\n#python #coding #programming #developer"
+    },
+    {
+        "quiz_id": "bool_is_subclass_int",
+        "title": "Python Quiz: bool as int Subclass",
+        "question": "What is the output of this code?",
+        "file_tab": "bool_math.py",
+        "code": "print(True + True * False)",
+        "badge_text": "Math with booleans!",
+        "options": [
+            {"letter": "A", "text": "0"},
+            {"letter": "B", "text": "1"},
+            {"letter": "C", "text": "2"},
+            {"letter": "D", "text": "TypeError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- In Python, bool is a subclass of int: True==1, False==0",
+            "- Multiplication happens first: True * False = 1 * 0 = 0",
+            "- Then addition: 1 + 0 = 1!"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Quiz: What is the output of this code?\n\n```python\nprint(True + True * False)\n```\n\nComment your answer! 👇\nOption A: 0\nOption B: 1\nOption C: 2\nOption D: TypeError\n\n💡 Explanation: In Python, bool inherits from int (True=1, False=0). Precedence rules apply: True * False is 0, so 1 + 0 = 1!\n\n👉 Follow for daily Python quizzes!\n#python #coding #softwareengineer"
+    },
+    {
+        "quiz_id": "chained_comparison_trap",
+        "title": "Python Quiz: Chained Comparison",
+        "question": "What is the output of this code?",
+        "file_tab": "chained.py",
+        "code": "print(False == False in [False])",
+        "badge_text": "Operator chaining!",
+        "options": [
+            {"letter": "A", "text": "True"},
+            {"letter": "B", "text": "False"},
+            {"letter": "C", "text": "TypeError"},
+            {"letter": "D", "text": "[False]"}
+        ],
+        "correct_idx": 0,
+        "explanation_lines": [
+            "- Python chains comparison operators automatically!",
+            "- (False == False in [False]) expands to:",
+            "- (False == False) and (False in [False]) -> True and True = True!"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Quiz: Chained comparison gotcha!\n\n```python\nprint(False == False in [False])\n```\n\nWhat will print? 👇\nOption A: True\nOption B: False\nOption C: TypeError\nOption D: [False]\n\n💡 Explanation: Comparison chaining transforms this into (False == False) and (False in [False]), which evaluates to True and True -> True!\n\n👉 Follow for daily coding challenges!\n#python #learnprogramming #code"
+    },
+    {
+        "quiz_id": "string_split_none_whitespace",
+        "title": "Python Quiz: str.split() vs str.split(' ')",
+        "question": "What is the output of this code?",
+        "file_tab": "splits.py",
+        "code": "s = 'a   b'\nprint(len(s.split()), len(s.split(' ')))",
+        "badge_text": "Subtle difference!",
+        "options": [
+            {"letter": "A", "text": "2 2"},
+            {"letter": "B", "text": "2 4"},
+            {"letter": "C", "text": "4 4"},
+            {"letter": "D", "text": "2 5"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- s.split() groups consecutive whitespace: ['a', 'b'] (len 2)",
+            "- s.split(' ') splits on every single space: ['a', '', '', 'b'] (len 4)!"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Quiz: split() vs split(' ')\n\n```python\ns = 'a   b'\nprint(len(s.split()), len(s.split(' ')))\n```\n\nCan you get this right? 👇\nOption A: 2 2\nOption B: 2 4\nOption C: 4 4\nOption D: 2 5\n\n💡 Explanation: .split() treats consecutive whitespace as one delimiter, while .split(' ') splits strictly on single spaces preserving empty strings!\n\n👉 Follow for daily Python tips!\n#python #developer #tech"
+    },
+    {
+        "quiz_id": "dict_fromkeys_shared_list",
+        "title": "Python Gotcha: dict.fromkeys() Shared Ref",
+        "question": "What is the output of this code?",
+        "file_tab": "fromkeys.py",
+        "code": "d = dict.fromkeys(['a', 'b'], [])\nd['a'].append(1)\nprint(d)",
+        "badge_text": "Classic mutability trap!",
+        "options": [
+            {"letter": "A", "text": "{'a': [1], 'b': []}"},
+            {"letter": "B", "text": "{'a': [1], 'b': [1]}"},
+            {"letter": "C", "text": "{'a': [], 'b': []}"},
+            {"letter": "D", "text": "KeyError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- dict.fromkeys reuses the SAME instance for all keys!",
+            "- Both 'a' and 'b' reference the exact same list object in memory",
+            "- Modifying d['a'] modifies d['b'] as well!"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Gotcha: dict.fromkeys() shared list trap!\n\n```python\nd = dict.fromkeys(['a', 'b'], [])\nd['a'].append(1)\nprint(d)\n```\n\nWhat is printed? 👇\nOption A: {'a': [1], 'b': []}\nOption B: {'a': [1], 'b': [1]}\nOption C: {'a': [], 'b': []}\nOption D: KeyError\n\n💡 Explanation: dict.fromkeys uses the identical object instance for every key. Both keys point to the exact same list in memory!\n\n👉 Follow for daily developer gotchas!\n#python #coding #programming"
+    },
+    {
+        "quiz_id": "lambda_late_binding_closure",
+        "title": "Python Quiz: Lambda Late Binding",
+        "question": "What is the output of this code?",
+        "file_tab": "lambdas.py",
+        "code": "funcs = [lambda: i for i in range(3)]\nprint([f() for f in funcs])",
+        "badge_text": "Tricky closures!",
+        "options": [
+            {"letter": "A", "text": "[0, 1, 2]"},
+            {"letter": "B", "text": "[2, 2, 2]"},
+            {"letter": "C", "text": "[3, 3, 3]"},
+            {"letter": "D", "text": "NameError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- Python closures use late binding for variable lookup",
+            "- 'i' is looked up when the lambda is CALLED, not when created",
+            "- After the loop completes, i is 2, so all lambdas return 2!"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Trap: Lambda closure late binding!\n\n```python\nfuncs = [lambda: i for i in range(3)]\nprint([f() for f in funcs])\n```\n\nWhat is the output? 👇\nOption A: [0, 1, 2]\nOption B: [2, 2, 2]\nOption C: [3, 3, 3]\nOption D: NameError\n\n💡 Explanation: Python closures bind variables late (at call time). When funcs are executed, the loop has ended and i holds 2 for all of them!\n\n👉 Follow for daily Python quizzes!\n#python #softwaredeveloper #coding"
+    },
+    {
+        "quiz_id": "tuple_single_element_comma",
+        "title": "Python Trap: Single Element Tuple",
+        "question": "What is the output of this code?",
+        "file_tab": "tuples.py",
+        "code": "x = (42)\ny = (42,)\nprint(type(x) == type(y))",
+        "badge_text": "Spot the difference!",
+        "options": [
+            {"letter": "A", "text": "True"},
+            {"letter": "B", "text": "False"},
+            {"letter": "C", "text": "TypeError"},
+            {"letter": "D", "text": "SyntaxError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- (42) without a comma is just an integer in parentheses (type int)",
+            "- (42,) with a comma is a 1-element tuple (type tuple)",
+            "- int == tuple is False!"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Trap: The single-element tuple gotcha!\n\n```python\nx = (42)\ny = (42,)\nprint(type(x) == type(y))\n```\n\nTrue or False? 👇\nOption A: True\nOption B: False\nOption C: TypeError\nOption D: SyntaxError\n\n💡 Explanation: Parentheses alone do not create a tuple—the comma does! x is an int, while y is a tuple, making equality False!\n\n👉 Follow for daily Python tips!\n#python #coding #tech"
+    },
+    {
+        "quiz_id": "list_extend_returns_none",
+        "title": "Python Gotcha: list.extend() In-Place",
+        "question": "What is the output of this code?",
+        "file_tab": "extend.py",
+        "code": "lst = [1, 2]\nprint(lst.extend([3, 4]))",
+        "badge_text": "In-place mutations!",
+        "options": [
+            {"letter": "A", "text": "[1, 2, 3, 4]"},
+            {"letter": "B", "text": "None"},
+            {"letter": "C", "text": "4"},
+            {"letter": "D", "text": "TypeError"}
+        ],
+        "correct_idx": 1,
+        "explanation_lines": [
+            "- list.extend() mutates the list in-place",
+            "- It returns None, NOT the mutated list!",
+            "- Printing lst.extend(...) therefore prints None"
+        ],
+        "narration": "",
+        "caption": "🔥 Python Gotcha: list.extend() return value!\n\n```python\nlst = [1, 2]\nprint(lst.extend([3, 4]))\n```\n\nDrop your guess! 👇\nOption A: [1, 2, 3, 4]\nOption B: None\nOption C: 4\nOption D: TypeError\n\n💡 Explanation: Like .sort() and .append(), .extend() modifies the list in place and returns None by design in Python!\n\n👉 Follow for daily programming challenges!\n#python #coding #developer"
     }
 ]
 
@@ -522,5 +675,8 @@ class QuizManager:
                 logger.info(f"[QuizManager] Selected fresh unposted quiz: '{quiz['quiz_id']}' - {quiz['title']}")
                 return quiz
 
-        # If all curated quizzes posted, generate a fresh unique one
-        raise RuntimeError("All curated quizzes have been posted! Add more quizzes to the bank or enable AI generation.")
+        # If all curated quizzes in the pool have been posted once, recycle the oldest one with a timestamp suffix
+        logger.warning("[QuizManager] All curated quizzes have been posted! Recycling oldest quiz for infinite publishing...")
+        oldest = dict(CURATED_QUIZZES[0])
+        oldest["quiz_id"] = f"{oldest['quiz_id']}_{datetime.now(timezone.utc).strftime('%Y%m%d%H%M')}"
+        return oldest
