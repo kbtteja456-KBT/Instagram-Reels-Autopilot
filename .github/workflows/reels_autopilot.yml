@@ -2,18 +2,15 @@ name: AI Instagram Reels Autopilot 24/7 (Cloud Scheduled)
 
 on:
   schedule:
-    # 07:00 AM & 06:00 PM Asia/Kolkata (01:30 & 12:30 UTC)
-    - cron: '30 1,12 * * *'
+    # 07:00 AM & 06:00 PM Asia/Kolkata (01:25 & 12:25 UTC)
+    # Using 25m offset to bypass GitHub shared runner queue delays at :00 and :30
+    - cron: '25 1,12 * * *'
   workflow_dispatch:
-    inputs:
-      topic:
-        description: 'Reel Topic (Leave blank for next fresh non-duplicate quiz)'
-        required: false
-        default: ''
-      niche:
-        description: 'Reel Niche'
-        required: false
-        default: 'python program quiz card reels'
+  repository_dispatch:
+    types: [publish_reel]
+
+permissions:
+  contents: write
 
 jobs:
   publish_reel:
@@ -23,6 +20,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -42,23 +41,28 @@ jobs:
 
       - name: Generate and Publish Fresh Quiz Reel to Instagram
         env:
-          REEL_TOPIC: ${{ github.event.inputs.topic || '' }}
-          REEL_NICHE: ${{ github.event.inputs.niche || 'python program quiz card reels' }}
           INSTAGRAM_ACCOUNT_ID: ${{ secrets.INSTAGRAM_ACCOUNT_ID || '17841434697950977' }}
-          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN }}
+          INSTAGRAM_ACCESS_TOKEN: ${{ secrets.INSTAGRAM_ACCESS_TOKEN || 'EAAaM9GMmfWABSp6Vf9BT5gMCRm7caxUQBndv0ODRZAci2ad07NSmFCSBtFXcJsHGzb4H3v7EJZCMpVXxF76OnPPtIlIkQzCzKOyNuQols3FKExnQr4Kiv8v4Fc7Ug2zqwyWcog6g5HX5vdmgllvhDJyvxmS9mhsPISLSo40tZA9B5rbJpzZABPG7N52PSgZDZD' }}
           META_APP_ID: ${{ secrets.META_APP_ID || '17841434697950977' }}
-          META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
+          META_APP_SECRET: ${{ secrets.META_APP_SECRET || 'EAAaM9GMmfWABSp6Vf9BT5gMCRm7caxUQBndv0ODRZAci2ad07NSmFCSBtFXcJsHGzb4H3v7EJZCMpVXxF76OnPPtIlIkQzCzKOyNuQols3FKExnQr4Kiv8v4Fc7Ug2zqwyWcog6g5HX5vdmgllvhDJyvxmS9mhsPISLSo40tZA9B5rbJpzZABPG7N52PSgZDZD' }}
           MONGODB_URI: ${{ secrets.MONGODB_URI || 'mongodb+srv://kbtteja456_db_user:sk8JAW7LzRixHXwR@cluster0.r3f7bqb.mongodb.net/?appName=Cluster0' }}
           MONGODB_DB_NAME: instagram_autopilot
           ZERO_COST_MODE: "true"
         run: |
-          python scripts/publish_now.py
+          python scripts/post_quiz_card_reel.py
+
+      - name: Sync Deduplication State Back to Repository
+        if: success()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add media_storage/posted_quizzes.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore: record posted quiz in cloud runner [skip ci]" && git push)
 
       - name: On Failure Alert & Diagnostics
         if: failure()
         run: |
-          echo "::error::Reel generation or Instagram publishing failed!"
+          echo "::error::Reel generation or Instagram publishing failed in cloud runner!"
           echo "Troubleshooting steps:"
           echo "1. Check if Instagram access token has expired."
           echo "2. Check if Meta Graph API is experiencing transient rate limits."
-          echo "3. Run 'python scripts/catch_up_missed_slots.py' locally to auto-recover any missed reels."
