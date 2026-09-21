@@ -94,5 +94,13 @@
     "instagram_url": "https://www.instagram.com/reel/DdihzfqGtL7/",
     "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_lambda_late_binding_closure_20260921_063424.mp4",
     "posted_at": "2026-09-21T06:35:11.610248+00:00"
+  },
+  {
+    "quiz_id": "tuple_single_element_comma",
+    "title": "Python Trap: Single Element Tuple",
+    "media_id": "18018408890927649",
+    "instagram_url": "https://www.instagram.com/reel/DdjI88aF6iW/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_tuple_single_element_comma_20260921_121630.mp4",
+    "posted_at": "2026-09-21T12:17:15.531333+00:00"
   }
 ]
