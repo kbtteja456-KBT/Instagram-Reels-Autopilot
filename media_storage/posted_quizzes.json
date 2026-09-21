@@ -78,5 +78,13 @@
     "instagram_url": "https://www.instagram.com/reel/Ddg_4LziJoZ/",
     "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_chained_comparison_trap_20260920_161844.mp4",
     "posted_at": "2026-09-20T16:19:31.566110+00:00"
+  },
+  {
+    "quiz_id": "string_split_none_whitespace",
+    "title": "Python Quiz: str.split() vs str.split(' ')",
+    "media_id": "18099236339395768",
+    "instagram_url": "https://www.instagram.com/reel/Ddh9Z4JkR4-/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_string_split_none_whitespace_20260921_011621.mp4",
+    "posted_at": "2026-09-21T01:17:03.267256+00:00"
   }
 ]
