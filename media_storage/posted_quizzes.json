@@ -86,5 +86,13 @@
     "instagram_url": "https://www.instagram.com/reel/Ddh9Z4JkR4-/",
     "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_string_split_none_whitespace_20260921_011621.mp4",
     "posted_at": "2026-09-21T01:17:03.267256+00:00"
+  },
+  {
+    "quiz_id": "lambda_late_binding_closure",
+    "title": "Python Quiz: Lambda Late Binding",
+    "media_id": "18142323718514729",
+    "instagram_url": "https://www.instagram.com/reel/DdihzfqGtL7/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_lambda_late_binding_closure_20260921_063424.mp4",
+    "posted_at": "2026-09-21T06:35:11.610248+00:00"
   }
 ]
