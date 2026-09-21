@@ -102,5 +102,13 @@
     "instagram_url": "https://www.instagram.com/reel/DdjI88aF6iW/",
     "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_tuple_single_element_comma_20260921_121630.mp4",
     "posted_at": "2026-09-21T12:17:15.531333+00:00"
+  },
+  {
+    "quiz_id": "list_extend_returns_none",
+    "title": "Python Gotcha: list.extend() In-Place",
+    "media_id": "18136394851616746",
+    "instagram_url": "https://www.instagram.com/reel/Ddjx-T-AUi8/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_list_extend_returns_none_20260921_181458.mp4",
+    "posted_at": "2026-09-21T18:15:46.445887+00:00"
   }
 ]
