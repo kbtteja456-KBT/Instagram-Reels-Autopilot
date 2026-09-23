@@ -64,107 +64,43 @@
     "posted_at": "2026-09-20T02:48:40.509256+00:00"
   },
   {
-    "quiz_id": "float_precision_03",
-    "title": "Python Quiz: Floating Point Precision",
-    "media_id": "18031475144891047",
-    "instagram_url": "https://www.instagram.com/reel/DdgkHQlgEj2/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_float_precision_03_20260920_121612.mp4",
-    "posted_at": "2026-09-20T12:16:51.765044+00:00"
+    "quiz_id": "dict_fromkeys_shared_list",
+    "title": "Python Gotcha: dict.fromkeys() Shared Ref",
+    "media_id": "18195475888389626",
+    "instagram_url": "https://www.instagram.com/reel/DdiIfC0j0fd/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_dict_fromkeys_shared_list_20260921_082239.mp4",
+    "posted_at": "2026-09-21T02:53:55.717031+00:00"
   },
   {
-    "quiz_id": "chained_comparison_trap",
-    "title": "Python Quiz: Chained Comparison",
-    "media_id": "18184228309419146",
-    "instagram_url": "https://www.instagram.com/reel/Ddg_4LziJoZ/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_chained_comparison_trap_20260920_161844.mp4",
-    "posted_at": "2026-09-20T16:19:31.566110+00:00"
-  },
-  {
-    "quiz_id": "string_split_none_whitespace",
-    "title": "Python Quiz: str.split() vs str.split(' ')",
-    "media_id": "18099236339395768",
-    "instagram_url": "https://www.instagram.com/reel/Ddh9Z4JkR4-/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_string_split_none_whitespace_20260921_011621.mp4",
-    "posted_at": "2026-09-21T01:17:03.267256+00:00"
-  },
-  {
-    "quiz_id": "lambda_late_binding_closure",
-    "title": "Python Quiz: Lambda Late Binding",
-    "media_id": "18142323718514729",
-    "instagram_url": "https://www.instagram.com/reel/DdihzfqGtL7/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_lambda_late_binding_closure_20260921_063424.mp4",
-    "posted_at": "2026-09-21T06:35:11.610248+00:00"
-  },
-  {
-    "quiz_id": "tuple_single_element_comma",
-    "title": "Python Trap: Single Element Tuple",
-    "media_id": "18018408890927649",
-    "instagram_url": "https://www.instagram.com/reel/DdjI88aF6iW/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_tuple_single_element_comma_20260921_121630.mp4",
-    "posted_at": "2026-09-21T12:17:15.531333+00:00"
-  },
-  {
-    "quiz_id": "list_extend_returns_none",
-    "title": "Python Gotcha: list.extend() In-Place",
-    "media_id": "18136394851616746",
-    "instagram_url": "https://www.instagram.com/reel/Ddjx-T-AUi8/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_list_extend_returns_none_20260921_181458.mp4",
-    "posted_at": "2026-09-21T18:15:46.445887+00:00"
-  },
-  {
-    "quiz_id": "set_comprehension_modulo_202609220116",
+    "quiz_id": "set_comprehension_modulo_202609221555",
     "title": "Python Quiz: Set Comprehension & Sorting",
-    "media_id": "17907059361589769",
-    "instagram_url": "https://www.instagram.com/reel/DdkiMp3FRmq/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_set_comprehension_modulo_202609220116_20260922_011621.mp4",
-    "posted_at": "2026-09-22T01:17:14.813794+00:00"
+    "media_id": "17908489563490416",
+    "instagram_url": "https://www.instagram.com/reel/DdmG8adkoCm/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_set_comprehension_modulo_202609221555_20260922_212558.mp4",
+    "posted_at": "2026-09-22T15:57:29.780041+00:00"
   },
   {
-    "quiz_id": "set_comprehension_modulo_202609220623",
+    "quiz_id": "set_comprehension_modulo_202609221558",
     "title": "Python Quiz: Set Comprehension & Sorting",
-    "media_id": "17987863302048334",
-    "instagram_url": "https://www.instagram.com/reel/DdlFV3PF3Pf/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_set_comprehension_modulo_202609220623_20260922_062329.mp4",
-    "posted_at": "2026-09-22T06:24:06.532638+00:00"
+    "media_id": "18024571958878965",
+    "instagram_url": "https://www.instagram.com/reel/DdmHNdGkj3h/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_set_comprehension_modulo_202609221558_20260922_212820.mp4",
+    "posted_at": "2026-09-22T15:59:51.356904+00:00"
   },
   {
-    "quiz_id": "set_comprehension_modulo_202609221216",
+    "quiz_id": "set_comprehension_modulo_202609231231",
     "title": "Python Quiz: Set Comprehension & Sorting",
-    "media_id": "17953485537031096",
-    "instagram_url": "https://www.instagram.com/reel/DdlttsVCOWe/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_set_comprehension_modulo_202609221216_20260922_121611.mp4",
-    "posted_at": "2026-09-22T12:17:04.120829+00:00"
+    "media_id": "18153027313458047",
+    "instagram_url": "https://www.instagram.com/reel/DdoUQzVkgS0/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_set_comprehension_modulo_202609231231_20260923_180124.mp4",
+    "posted_at": "2026-09-23T12:32:15.869160+00:00"
   },
   {
-    "quiz_id": "set_comprehension_modulo_202609221705",
+    "quiz_id": "set_comprehension_modulo_202609231233",
     "title": "Python Quiz: Set Comprehension & Sorting",
-    "media_id": "18120713992971308",
-    "instagram_url": "https://www.instagram.com/reel/DdmOzSNEd8A/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_set_comprehension_modulo_202609221705_20260922_170523.mp4",
-    "posted_at": "2026-09-22T17:06:08.549292+00:00"
-  },
-  {
-    "quiz_id": "set_comprehension_modulo_202609230116",
-    "title": "Python Quiz: Set Comprehension & Sorting",
-    "media_id": "18114981758007481",
-    "instagram_url": "https://www.instagram.com/reel/DdnG-ZoFvZN/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_set_comprehension_modulo_202609230116_20260923_011610.mp4",
-    "posted_at": "2026-09-23T01:17:01.465487+00:00"
-  },
-  {
-    "quiz_id": "set_comprehension_modulo_202609230607",
-    "title": "Python Quiz: Set Comprehension & Sorting",
-    "media_id": "18125430214855974",
-    "instagram_url": "https://www.instagram.com/reel/DdnoWGgEmCQ/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_set_comprehension_modulo_202609230607_20260923_060745.mp4",
-    "posted_at": "2026-09-23T06:08:33.468404+00:00"
-  },
-  {
-    "quiz_id": "set_comprehension_modulo_202609231216",
-    "title": "Python Quiz: Set Comprehension & Sorting",
-    "media_id": "18131193628666466",
-    "instagram_url": "https://www.instagram.com/reel/DdoSifrj2Vf/",
-    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_set_comprehension_modulo_202609231216_20260923_121628.mp4",
-    "posted_at": "2026-09-23T12:17:13.949707+00:00"
+    "media_id": "17913981387465107",
+    "instagram_url": "https://www.instagram.com/reel/DdoUi9FEuuJ/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_set_comprehension_modulo_202609231233_20260923_180305.mp4",
+    "posted_at": "2026-09-23T12:34:46.131193+00:00"
   }
 ]
