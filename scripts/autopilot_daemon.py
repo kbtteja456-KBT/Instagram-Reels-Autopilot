@@ -40,23 +40,45 @@ daemon_logger.addHandler(stream_h)
 
 
 async def get_published_today_count(tz: zoneinfo.ZoneInfo, now: datetime) -> int:
-    """Check how many reels have been published today from MongoDB or local cache."""
+    """Check how many reels have been published today from MongoDB Atlas or local cache."""
     count = 0
+    today_str = now.strftime("%Y-%m-%d")
+    start_of_day_utc = datetime(now.year, now.month, now.day, tzinfo=tz).astimezone(timezone.utc)
+
     try:
         await AsyncMongoDB.connect()
         db = AsyncMongoDB.get_db()
         if db is not None:
-            start_of_day = datetime(now.year, now.month, now.day, tzinfo=tz).astimezone(timezone.utc)
-            cursor = db.reels.find({
-                "status": "PUBLISHED",
-                "instagram_published_at": {"$gte": start_of_day}
-            })
-            docs = await cursor.to_list(length=20)
-            count = len(docs)
-    except Exception as e:
-        daemon_logger.warning(f"MongoDB count note: {e}")
+            # 1. Check posted_quizzes in MongoDB Atlas
+            try:
+                quizzes_cursor = db.posted_quizzes.find({
+                    "$or": [
+                        {"created_at": {"$gte": start_of_day_utc.isoformat()}},
+                        {"posted_at": {"$gte": start_of_day_utc.isoformat()}},
+                        {"created_at": {"$regex": f"^{today_str}"}},
+                        {"posted_at": {"$regex": f"^{today_str}"}}
+                    ]
+                })
+                q_docs = await quizzes_cursor.to_list(length=20)
+                count = max(count, len(q_docs))
+            except Exception as q_err:
+                daemon_logger.warning(f"MongoDB posted_quizzes check note: {q_err}")
 
-    # Fallback to local posted_quizzes.json if DB unavailable
+            # 2. Check reels in MongoDB Atlas
+            try:
+                reels_cursor = db.reels.find({
+                    "status": "PUBLISHED",
+                    "instagram_published_at": {"$gte": start_of_day_utc}
+                })
+                r_docs = await reels_cursor.to_list(length=20)
+                count = max(count, len(r_docs))
+            except Exception as r_err:
+                daemon_logger.warning(f"MongoDB reels check note: {r_err}")
+
+    except Exception as e:
+        daemon_logger.warning(f"MongoDB connection count note: {e}")
+
+    # 3. Fallback to local posted_quizzes.json if DB count is 0
     if count == 0:
         posted_file = Path(settings.media_storage_dir) / "posted_quizzes.json"
         if posted_file.exists():
@@ -64,9 +86,8 @@ async def get_published_today_count(tz: zoneinfo.ZoneInfo, now: datetime) -> int
             try:
                 with open(posted_file, "r", encoding="utf-8") as f:
                     items = json.load(f)
-                    today_str = now.strftime("%Y-%m-%d")
                     for it in items:
-                        posted_at = it.get("posted_at", "")
+                        posted_at = it.get("posted_at", "") or it.get("created_at", "")
                         if posted_at.startswith(today_str):
                             count += 1
             except Exception:
@@ -92,12 +113,25 @@ async def execute_publishing_with_retry(max_attempts: int = 3) -> bool:
     return False
 
 
+def is_within_slot_window(now: datetime, slot_time_str: str, window_minutes: int = 45) -> bool:
+    """Check if current time is within [slot_time, slot_time + window_minutes]."""
+    try:
+        sh, sm = map(int, slot_time_str.split(":"))
+        slot_dt = now.replace(hour=sh, minute=sm, second=0, microsecond=0)
+        diff_sec = (now - slot_dt).total_seconds()
+        # Active if from exact time up to window_minutes later (e.g. 0 to 45 mins)
+        return 0 <= diff_sec <= (window_minutes * 60)
+    except Exception:
+        return False
+
+
 async def run_autopilot_daemon():
-    """Main continuous loop running 24/7."""
+    """Main continuous loop running 24/7 with strict slot window validation."""
     daemon_logger.info("=" * 65)
     daemon_logger.info("AI Instagram Reels Autopilot 24/7 Engine Started")
     daemon_logger.info(f"Timezone: {settings.timezone} | Slots: {settings.slot1_time}, {settings.slot2_time}")
-    daemon_logger.info("Mode: Full Zero-Interaction Autopilot with Self-Healing Catch-Up")
+    daemon_logger.info("Slot Windows: Active for 45 minutes from each scheduled slot time")
+    daemon_logger.info("Rule: No random time publishing when computer wakes up late")
     daemon_logger.info("=" * 65)
 
     last_trigger_signature = ""
@@ -107,50 +141,43 @@ async def run_autopilot_daemon():
             tz = zoneinfo.ZoneInfo(settings.timezone)
             now = datetime.now(tz)
             today_str = now.strftime("%Y-%m-%d")
-            current_hour = now.hour
-            current_minute = now.minute
             current_hm = now.strftime("%H:%M")
-
-            # Determine which slots are due so far today:
-            # Slot 1 is due if hour >= 7 (07:00 AM)
-            # Slot 2 is due if hour >= 18 (06:00 PM)
-            slot1_h, slot1_m = map(int, settings.slot1_time.split(":"))
-            slot2_h, slot2_m = map(int, settings.slot2_time.split(":"))
-
-            slots_due_count = 0
-            if (current_hour > slot1_h) or (current_hour == slot1_h and current_minute >= slot1_m):
-                slots_due_count += 1
-            if (current_hour > slot2_h) or (current_hour == slot2_h and current_minute >= slot2_m):
-                slots_due_count += 1
 
             published_today = await get_published_today_count(tz, now)
 
-            # 1. Self-Healing Missed Slot Catch-Up
-            if published_today < slots_due_count:
-                missed = slots_due_count - published_today
-                daemon_logger.warning(
-                    f"⚠️ Self-Healing Trigger: {missed} missed slot(s) detected today "
-                    f"(Due: {slots_due_count}, Published: {published_today}). Auto-publishing now..."
-                )
-                success = await execute_publishing_with_retry()
-                if success:
-                    last_trigger_signature = f"{today_str}_{slots_due_count}"
+            # Check if currently inside Slot 1 window (e.g., 07:00 to 07:45)
+            in_slot1_window = is_within_slot_window(now, settings.slot1_time, window_minutes=45)
+            # Check if currently inside Slot 2 window (e.g., 18:00 to 18:45)
+            in_slot2_window = is_within_slot_window(now, settings.slot2_time, window_minutes=45)
 
-            # 2. Exact Slot Trigger Check
-            elif current_hm in [settings.slot1_time, settings.slot2_time]:
-                slot_num = 1 if current_hm == settings.slot1_time else 2
-                trigger_sig = f"{today_str}_slot{slot_num}"
-                if trigger_sig != last_trigger_signature:
-                    daemon_logger.info(f"⏰ Exact Scheduled Slot {slot_num} ({current_hm} {settings.timezone}) triggered!")
+            if in_slot1_window:
+                slot_sig = f"{today_str}_slot1"
+                if published_today == 0 and last_trigger_signature != slot_sig:
+                    daemon_logger.info(
+                        f"⏰ Slot 1 Window Active ({settings.slot1_time} {settings.timezone}, current: {current_hm}). "
+                        f"Publishing Slot 1 Reel..."
+                    )
                     success = await execute_publishing_with_retry()
                     if success:
-                        last_trigger_signature = trigger_sig
+                        last_trigger_signature = slot_sig
+
+            elif in_slot2_window:
+                slot_sig = f"{today_str}_slot2"
+                # If slot 2 is active, allow publish if today's count < daily limit (2)
+                if published_today < settings.daily_reel_limit and last_trigger_signature != slot_sig:
+                    daemon_logger.info(
+                        f"⏰ Slot 2 Window Active ({settings.slot2_time} {settings.timezone}, current: {current_hm}). "
+                        f"Publishing Slot 2 Reel..."
+                    )
+                    success = await execute_publishing_with_retry()
+                    if success:
+                        last_trigger_signature = slot_sig
 
         except Exception as e:
             daemon_logger.error(f"Autopilot daemon loop error: {e}", exc_info=True)
 
-        # Sleep 45 seconds between checks
-        await asyncio.sleep(45)
+        # Sleep 30 seconds between checks
+        await asyncio.sleep(30)
 
 
 if __name__ == "__main__":

@@ -48,6 +48,7 @@ class EditorAgent(BaseAgent):
         cmd_with_subs = [
             self.ffmpeg_bin,
             "-y",
+            "-threads", "1",
             "-f", "concat",
             "-safe", "0",
             "-i", str(concat_list_file),
@@ -71,11 +72,12 @@ class EditorAgent(BaseAgent):
         proc = subprocess.run(cmd_with_subs, capture_output=True, text=True)
 
         if proc.returncode != 0 or not os.path.exists(final_mp4):
-            self.log(f"Subtitles filter warning: {proc.stderr[:300]}. Retrying with direct scaling...")
+            self.log(f"Subtitles filter warning: {proc.stderr[:300]}. Retrying with direct scaling...", level="WARNING")
             # Fallback without burning ASS if libass has path issue
             cmd_fallback = [
                 self.ffmpeg_bin,
                 "-y",
+                "-threads", "1",
                 "-f", "concat",
                 "-safe", "0",
                 "-i", str(concat_list_file),

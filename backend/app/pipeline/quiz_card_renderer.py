@@ -379,25 +379,31 @@ class QuizCardRenderer:
         Path(output_video_path).parent.mkdir(parents=True, exist_ok=True)
         total_frames = int(total_duration_sec * fps)
 
+        # Low-memory FFmpeg configuration for cloud instances (Render 512MB RAM limit)
+        # Using -threads 1, small buffer size, and direct raw rgb24 piping avoids multi-thread bloat
         cmd = [
             self.ffmpeg_bin, "-y",
             "-loglevel", "error",
             "-f", "rawvideo",
             "-vcodec", "rawvideo",
             "-s", f"{self.width}x{self.height}",
-            "-pix_fmt", "bgr24",
+            "-pix_fmt", "rgb24",
             "-r", str(fps),
             "-i", "-",
+            "-threads", "1",
             "-c:v", "libx264",
             "-preset", "veryfast",
-            "-crf", "20",
+            "-crf", "22",
+            "-bufsize", "3000k",
+            "-maxrate", "5000k",
             "-pix_fmt", "yuv420p",
             output_video_path
         ]
 
-        logger.info(f"[QuizCardRenderer] Rendering {total_frames} frames ({total_duration_sec:.1f}s) to {output_video_path}...")
+        logger.info(f"[QuizCardRenderer] Rendering {total_frames} frames ({total_duration_sec:.1f}s) to {output_video_path} [Low-Memory Mode]...")
         proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
+        import gc
         for f in range(total_frames):
             t = f / fps
             frame_img = self.render_quiz_frame(
@@ -409,8 +415,13 @@ class QuizCardRenderer:
                 countdown_end_t=countdown_end_t,
                 reveal_start_t=reveal_start_t
             )
-            np_frame = cv2.cvtColor(np.array(frame_img), cv2.COLOR_RGB2BGR)
-            proc.stdin.write(np_frame.tobytes())
+            # Write raw RGB bytes directly from PIL (zero cv2/numpy allocation overhead)
+            proc.stdin.write(frame_img.tobytes())
+            del frame_img
+
+            # Periodic garbage collection every 60 frames to keep RAM rock steady
+            if f % 60 == 0:
+                gc.collect()
 
         proc.stdin.close()
         proc.wait()
@@ -427,11 +438,12 @@ class QuizCardRenderer:
         audio_track_path: str,
         output_mp4_path: str
     ) -> str:
-        """Mux video track and mixed audio track into Instagram-ready MP4."""
+        """Mux video track and mixed audio track into Instagram-ready MP4 with low memory footprint."""
         Path(output_mp4_path).parent.mkdir(parents=True, exist_ok=True)
 
         cmd = [
             self.ffmpeg_bin, "-y",
+            "-threads", "1",
             "-i", video_track_path,
             "-i", audio_track_path,
             "-c:v", "copy",
