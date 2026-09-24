@@ -2,9 +2,11 @@ name: AI Instagram Reels Autopilot 24/7 (Cloud Scheduled)
 
 on:
   schedule:
-    # 07:00 AM & 06:00 PM Asia/Kolkata (01:25 & 12:25 UTC)
-    # Using 25m offset to bypass GitHub shared runner queue delays at :00 and :30
-    - cron: '25 1,12 * * *'
+    # Exactly 07:00 AM & 06:00 PM Asia/Kolkata (IST):
+    # - 01:30 UTC = 07:00 AM IST
+    # - 12:30 UTC = 06:00 PM IST
+    # (Note: GitHub Actions UI displays times in UTC: 1:30 AM & 12:30 PM UTC)
+    - cron: '30 1,12 * * *'
   workflow_dispatch:
   repository_dispatch:
     types: [publish_reel]

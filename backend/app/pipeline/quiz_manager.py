@@ -629,6 +629,17 @@ class QuizManager:
             except Exception:
                 posted_data = []
 
+        try:
+            import zoneinfo
+            tz = zoneinfo.ZoneInfo(settings.timezone)
+            now_local = datetime.now(tz)
+        except Exception:
+            now_local = datetime.now()
+
+        now_local_iso = now_local.isoformat()
+        now_utc_iso = datetime.now(timezone.utc).isoformat()
+        local_time_display = now_local.strftime("%I:%M %p %Z")
+
         if not any(item.get("quiz_id") == quiz_id for item in posted_data):
             record = {
                 "quiz_id": quiz_id,
@@ -636,7 +647,9 @@ class QuizManager:
                 "media_id": media_id,
                 "instagram_url": instagram_url,
                 "file_path": file_path,
-                "posted_at": datetime.now(timezone.utc).isoformat()
+                "posted_at": now_local_iso,
+                "posted_at_utc": now_utc_iso,
+                "local_time_display": local_time_display
             }
             posted_data.append(record)
             with open(self.posted_file, "w", encoding="utf-8") as f:
@@ -656,7 +669,9 @@ class QuizManager:
                         "title": title,
                         "media_id": str(media_id),
                         "instagram_url": str(instagram_url),
-                        "posted_at": datetime.now(timezone.utc).isoformat()
+                        "posted_at": now_local_iso,
+                        "posted_at_utc": now_utc_iso,
+                        "local_time_display": local_time_display
                     }},
                     upsert=True
                 )

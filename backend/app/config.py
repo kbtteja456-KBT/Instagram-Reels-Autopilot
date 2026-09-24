@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     slot2_time: str = "18:00"
     daily_reel_limit: int = 2
     media_storage_dir: str = "./media_storage"
-    enable_internal_scheduler: bool = True
+    enable_internal_scheduler: bool = False
     niche: str = "python program quiz card reels"
     custom_content_prompt: str = ""
     target_audience: str = "Programmers, Students & Python Developers"

@@ -93,6 +93,13 @@ async def main():
     )
 
     try:
+        import zoneinfo
+        tz = zoneinfo.ZoneInfo(settings.timezone)
+        now_local = datetime.now(tz)
+    except Exception:
+        now_local = datetime.now()
+
+    try:
         db = AsyncMongoDB.get_db()
         if db is not None:
             await db.posted_quizzes.insert_one({
@@ -104,7 +111,10 @@ async def main():
                 "status": "PUBLISHED",
                 "instagram_media_id": media_id,
                 "instagram_url": instagram_url,
-                "created_at": datetime.now(timezone.utc).isoformat()
+                "posted_at": now_local.isoformat(),
+                "posted_at_utc": datetime.now(timezone.utc).isoformat(),
+                "local_time_display": now_local.strftime("%I:%M %p %Z"),
+                "created_at": now_local.isoformat()
             })
     except Exception as e:
         logger.warning(f"MongoDB persistence note: {e}")
