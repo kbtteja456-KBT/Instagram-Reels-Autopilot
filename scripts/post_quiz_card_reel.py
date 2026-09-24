@@ -1,10 +1,10 @@
-"""Generate and post a 15s Countdown + Answer Reveal Reel (Pure Music, Zero Voiceover) to Instagram."""
-
+import argparse
 import asyncio
 import os
 import sys
 import subprocess
-from datetime import datetime, timezone
+import zoneinfo
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 # Add project root to sys.path
@@ -22,8 +22,128 @@ from backend.app.agents.instagram import InstagramAgent
 from backend.app.core.db import AsyncMongoDB
 
 
+def is_within_slot_window(now: datetime, slot_time_str: str, before_mins: int = 35, after_mins: int = 60) -> bool:
+    """Check if current time falls within [slot_time - before_mins, slot_time + after_mins]."""
+    try:
+        sh, sm = map(int, slot_time_str.split(":"))
+        slot_dt = now.replace(hour=sh, minute=sm, second=0, microsecond=0)
+        start_w = slot_dt - timedelta(minutes=before_mins)
+        end_w = slot_dt + timedelta(minutes=after_mins)
+        return start_w <= now <= end_w
+    except Exception:
+        return False
+
+
+async def get_published_today_count(tz: zoneinfo.ZoneInfo, now: datetime) -> int:
+    """Check how many reels have been published today from MongoDB Atlas or local cache."""
+    count = 0
+    today_str = now.strftime("%Y-%m-%d")
+    start_of_day_utc = datetime(now.year, now.month, now.day, tzinfo=tz).astimezone(timezone.utc)
+
+    try:
+        await AsyncMongoDB.connect()
+        db = AsyncMongoDB.get_db()
+        if db is not None:
+            # 1. Check posted_quizzes in MongoDB Atlas
+            try:
+                quizzes_cursor = db.posted_quizzes.find({
+                    "$or": [
+                        {"created_at": {"$gte": start_of_day_utc.isoformat()}},
+                        {"posted_at": {"$gte": start_of_day_utc.isoformat()}},
+                        {"created_at": {"$regex": f"^{today_str}"}},
+                        {"posted_at": {"$regex": f"^{today_str}"}}
+                    ]
+                })
+                q_docs = await quizzes_cursor.to_list(length=20)
+                count = max(count, len(q_docs))
+            except Exception as q_err:
+                logger.warning(f"MongoDB posted_quizzes check note: {q_err}")
+
+            # 2. Check reels in MongoDB Atlas
+            try:
+                reels_cursor = db.reels.find({
+                    "status": "PUBLISHED",
+                    "instagram_published_at": {"$gte": start_of_day_utc}
+                })
+                r_docs = await reels_cursor.to_list(length=20)
+                count = max(count, len(r_docs))
+            except Exception as r_err:
+                logger.warning(f"MongoDB reels check note: {r_err}")
+    except Exception as e:
+        logger.warning(f"MongoDB count connection note: {e}")
+
+    # 3. Fallback to local posted_quizzes.json if DB count is 0
+    if count == 0:
+        posted_file = Path(settings.media_storage_dir) / "posted_quizzes.json"
+        if posted_file.exists():
+            import json
+            try:
+                with open(posted_file, "r", encoding="utf-8") as f:
+                    items = json.load(f)
+                    for it in items:
+                        posted_at = it.get("posted_at", "") or it.get("created_at", "")
+                        if posted_at.startswith(today_str):
+                            count += 1
+            except Exception:
+                pass
+
+    return count
+
+
 async def main():
-    logger.info("=== 15-Second Countdown + Answer Reveal Quiz Reel (Pure Music, Zero Voiceover) ===")
+    parser = argparse.ArgumentParser(description="15s Countdown + Answer Reveal Quiz Reel Publisher")
+    parser.add_argument("--force", action="store_true", help="Force publish regardless of time slot or daily limit")
+    args = parser.parse_args()
+
+    logger.info("=== 15-Second Countdown + Answer Reveal Quiz Reel Autopilot Engine ===")
+
+    try:
+        tz = zoneinfo.ZoneInfo(settings.timezone)
+    except Exception as tz_err:
+        logger.warning(f"Timezone resolution note: {tz_err}")
+        tz = timezone.utc
+
+    now = datetime.now(tz)
+    today_str = now.strftime("%Y-%m-%d")
+    current_hm = now.strftime("%H:%M")
+    logger.info(f"Current time: {current_hm} {now.tzname()} | Target slots: Slot 1={settings.slot1_time}, Slot 2={settings.slot2_time} ({settings.timezone})")
+
+    if not args.force:
+        # Slot 1 window: e.g. 07:00 IST -> 06:25 to 08:00 IST
+        in_slot1 = is_within_slot_window(now, settings.slot1_time, before_mins=35, after_mins=60)
+        # Slot 2 window: e.g. 18:00 IST -> 17:25 to 19:00 IST
+        in_slot2 = is_within_slot_window(now, settings.slot2_time, before_mins=35, after_mins=60)
+
+        if not (in_slot1 or in_slot2):
+            logger.warning(
+                f"[Autopilot Guard] Current time {current_hm} {now.tzname()} is outside scheduled slots "
+                f"(Slot 1: {settings.slot1_time}, Slot 2: {settings.slot2_time} {settings.timezone}). "
+                f"Skipping execution to prevent unwanted posting at afternoon 12 or late night."
+            )
+            return
+
+        published_today = await get_published_today_count(tz, now)
+        logger.info(f"[Autopilot Guard] Reels published today ({today_str}): {published_today}/{settings.daily_reel_limit}")
+
+        if in_slot1:
+            if published_today >= 1:
+                logger.info(
+                    f"[Autopilot Guard] Slot 1 Reel already published today ({published_today} reel(s) posted). "
+                    f"Skipping duplicate Slot 1 post."
+                )
+                return
+            logger.info(f"[Autopilot Guard] Slot 1 Active ({settings.slot1_time} {settings.timezone}). Proceeding to publish morning Reel...")
+
+        elif in_slot2:
+            if published_today >= settings.daily_reel_limit:
+                logger.info(
+                    f"[Autopilot Guard] Daily reel limit ({settings.daily_reel_limit}) already reached for today "
+                    f"({published_today} reel(s) posted). Skipping Slot 2 post."
+                )
+                return
+            logger.info(f"[Autopilot Guard] Slot 2 Active ({settings.slot2_time} {settings.timezone}). Proceeding to publish evening Reel...")
+    else:
+        logger.warning("[Force Mode] Bypassing slot schedule and daily count checks.")
 
     quiz_mgr = QuizManager()
     quiz = quiz_mgr.get_next_unposted_quiz()
@@ -93,8 +213,6 @@ async def main():
     )
 
     try:
-        import zoneinfo
-        tz = zoneinfo.ZoneInfo(settings.timezone)
         now_local = datetime.now(tz)
     except Exception:
         now_local = datetime.now()

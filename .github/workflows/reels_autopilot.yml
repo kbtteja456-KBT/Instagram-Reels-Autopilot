@@ -1,13 +1,19 @@
 name: AI Instagram Reels Autopilot 24/7 (Cloud Scheduled)
 
 on:
-  schedule:
-    # Exactly 07:00 AM & 06:00 PM Asia/Kolkata (IST):
-    # - 01:30 UTC = 07:00 AM IST
-    # - 12:30 UTC = 06:00 PM IST
-    # (Note: GitHub Actions UI displays times in UTC: 1:30 AM & 12:30 PM UTC)
-    - cron: '30 1,12 * * *'
+  # Note: GitHub Actions shared runner schedule cron frequently experiences 4-6 hour queue delays,
+  # causing runs to fire off-schedule (e.g. at 12:00 PM afternoon or late night).
+  # We rely on repository_dispatch for punctual scheduled triggers, and post_quiz_card_reel.py
+  # enforces strict slot-window and deduplication checks as an impenetrable guard.
+  # schedule:
+  #   - cron: '30 1,12 * * *'
   workflow_dispatch:
+    inputs:
+      force:
+        description: 'Force publish immediately (bypass schedule window and daily limit)'
+        type: boolean
+        required: false
+        default: false
   repository_dispatch:
     types: [publish_reel]
 
@@ -51,7 +57,11 @@ jobs:
           MONGODB_DB_NAME: instagram_autopilot
           ZERO_COST_MODE: "true"
         run: |
-          python scripts/post_quiz_card_reel.py
+          FORCE_ARG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FORCE_ARG="--force"
+          fi
+          python scripts/post_quiz_card_reel.py $FORCE_ARG
 
       - name: Sync Deduplication State Back to Repository
         if: success()
