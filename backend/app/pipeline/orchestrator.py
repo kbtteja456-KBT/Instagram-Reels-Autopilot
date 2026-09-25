@@ -279,8 +279,12 @@ class PipelineOrchestrator:
         from backend.app.pipeline.audio_mixer import AudioMixer
 
         quiz_mgr = QuizManager()
-        quiz = quiz_mgr.get_next_unposted_quiz()
+        quiz = await quiz_mgr.get_next_unposted_quiz_async()
         quiz_id = quiz["quiz_id"]
+
+        if quiz_mgr.is_duplicate_or_posted(quiz):
+            logger.error(f"[Orchestrator] Duplicate quiz detected: '{quiz_id}' - '{quiz['title']}'. Aborting.")
+            raise DuplicateUploadPreventedError(f"Quiz '{quiz['title']}' was already posted.")
 
         await self._emit_activity(job_id, JobState.IDEA, f"Selected fresh Python Quiz: '{quiz['title']}' (Zero duplicates guaranteed)")
 
@@ -371,7 +375,8 @@ class PipelineOrchestrator:
                 title=quiz["title"],
                 media_id=str(media_id),
                 instagram_url=str(instagram_url),
-                file_path=final_mp4
+                file_path=final_mp4,
+                code=quiz.get("code")
             )
 
             reel_record.instagram_media_id = media_id

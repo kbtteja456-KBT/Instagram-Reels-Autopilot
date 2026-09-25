@@ -146,9 +146,17 @@ async def main():
         logger.warning("[Force Mode] Bypassing slot schedule and daily count checks.")
 
     quiz_mgr = QuizManager()
-    quiz = quiz_mgr.get_next_unposted_quiz()
+    quiz = await quiz_mgr.get_next_unposted_quiz_async()
     quiz_id = quiz["quiz_id"]
     logger.info(f"Selected Fresh Quiz: '{quiz_id}' - {quiz['title']}")
+
+    # Strict Anti-Duplicate Guard: Abort immediately if already posted
+    if quiz_mgr.is_duplicate_or_posted(quiz):
+        logger.error(
+            f"[Autopilot Guard] FATAL: Quiz '{quiz_id}' ('{quiz['title']}') was ALREADY posted to Instagram! "
+            f"Aborting immediately to prevent any duplicate upload."
+        )
+        return
 
     # Setup directories
     temp_dir = settings.temp_path / f"quiz_{quiz_id}"
@@ -209,7 +217,8 @@ async def main():
         title=quiz["title"],
         media_id=str(media_id),
         instagram_url=str(instagram_url),
-        file_path=final_mp4_path
+        file_path=final_mp4_path,
+        code=quiz.get("code")
     )
 
     try:
