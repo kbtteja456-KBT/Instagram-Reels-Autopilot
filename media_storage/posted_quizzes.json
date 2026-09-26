@@ -81,5 +81,16 @@
     "posted_at": "2026-09-25T18:55:07.261299",
     "posted_at_utc": "2026-09-25T13:25:07.261319+00:00",
     "local_time_display": "06:55 PM "
+  },
+  {
+    "quiz_id": "bool_int_dict_key",
+    "title": "Python Gotcha: Boolean Dictionary Keys",
+    "media_id": "17963981888984536",
+    "instagram_url": "https://www.instagram.com/reel/DdwA6FNjBsk/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_bool_int_dict_key_20260926_121621.mp4",
+    "code_hash": "963f32573652847c3ef0d3eb72f02cccd5f0378d72d3963002fa77cbde45287b",
+    "posted_at": "2026-09-26T12:17:06.699189",
+    "posted_at_utc": "2026-09-26T12:17:06.699196+00:00",
+    "local_time_display": "12:17 PM "
   }
 ]
