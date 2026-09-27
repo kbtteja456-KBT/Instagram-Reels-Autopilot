@@ -46,10 +46,12 @@ class InstagramAgent(BaseAgent):
                 caption=caption
             )
         except Exception as resumable_err:
-            self.log(f"Direct resumable upload notice: {resumable_err}. Falling back to hosted URL container...", level="WARNING")
+            self.log(f"Direct resumable upload notice: {resumable_err}. Falling back to hosted public CDN container...", level="WARNING")
+            cdn_url = await self.client.upload_video_to_public_cdn(video_filepath=video_filepath)
             creation_id = await self.client.create_reel_container(
                 video_filename=filename,
                 caption=caption,
+                video_url=cdn_url,
                 cover_image_url=cover_image_url
             )
 

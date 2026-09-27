@@ -2,7 +2,7 @@
 
 import asyncio
 import zoneinfo
-from datetime import datetime, time as dtime
+from datetime import datetime, timezone, time as dtime
 from typing import Optional
 from backend.app.config import settings
 from backend.app.core.logging import logger

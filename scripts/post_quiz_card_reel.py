@@ -35,10 +35,9 @@ def is_within_slot_window(now: datetime, slot_time_str: str, before_mins: int = 
 
 
 async def get_published_today_count(tz: zoneinfo.ZoneInfo, now: datetime) -> int:
-    """Check how many reels have been published today from MongoDB Atlas or local cache."""
-    count = 0
-    today_str = now.strftime("%Y-%m-%d")
-    start_of_day_utc = datetime(now.year, now.month, now.day, tzinfo=tz).astimezone(timezone.utc)
+    """Accurately check how many unique reels have been published today in the specified timezone."""
+    published_reels = set()
+    today_date = now.date()
 
     try:
         await AsyncMongoDB.connect()
@@ -46,34 +45,53 @@ async def get_published_today_count(tz: zoneinfo.ZoneInfo, now: datetime) -> int
         if db is not None:
             # 1. Check posted_quizzes in MongoDB Atlas
             try:
-                quizzes_cursor = db.posted_quizzes.find({
-                    "$or": [
-                        {"created_at": {"$gte": start_of_day_utc.isoformat()}},
-                        {"posted_at": {"$gte": start_of_day_utc.isoformat()}},
-                        {"created_at": {"$regex": f"^{today_str}"}},
-                        {"posted_at": {"$regex": f"^{today_str}"}}
-                    ]
-                })
-                q_docs = await quizzes_cursor.to_list(length=20)
-                count = max(count, len(q_docs))
+                async for doc in db.posted_quizzes.find():
+                    media_id = str(doc.get("media_id") or "").strip()
+                    if not media_id or media_id == "None" or media_id.startswith("mock"):
+                        continue
+                    ts_val = doc.get("posted_at_utc") or doc.get("posted_at") or doc.get("created_at")
+                    if not ts_val:
+                        continue
+                    try:
+                        if isinstance(ts_val, datetime):
+                            dt = ts_val
+                        else:
+                            dt = datetime.fromisoformat(str(ts_val))
+                        if dt.tzinfo is None:
+                            dt = dt.replace(tzinfo=timezone.utc)
+                        local_dt = dt.astimezone(tz)
+                        if local_dt.date() == today_date:
+                            published_reels.add(doc.get("quiz_id") or media_id)
+                    except Exception:
+                        pass
             except Exception as q_err:
                 logger.warning(f"MongoDB posted_quizzes check note: {q_err}")
 
             # 2. Check reels in MongoDB Atlas
             try:
-                reels_cursor = db.reels.find({
-                    "status": "PUBLISHED",
-                    "instagram_published_at": {"$gte": start_of_day_utc}
-                })
-                r_docs = await reels_cursor.to_list(length=20)
-                count = max(count, len(r_docs))
+                async for doc in db.reels.find({"status": "PUBLISHED"}):
+                    pub_at = doc.get("instagram_published_at")
+                    if not pub_at:
+                        continue
+                    try:
+                        if isinstance(pub_at, datetime):
+                            dt = pub_at
+                        else:
+                            dt = datetime.fromisoformat(str(pub_at))
+                        if dt.tzinfo is None:
+                            dt = dt.replace(tzinfo=timezone.utc)
+                        local_dt = dt.astimezone(tz)
+                        if local_dt.date() == today_date:
+                            published_reels.add(str(doc.get("id", doc.get("_id"))))
+                    except Exception:
+                        pass
             except Exception as r_err:
                 logger.warning(f"MongoDB reels check note: {r_err}")
     except Exception as e:
         logger.warning(f"MongoDB count connection note: {e}")
 
-    # 3. Fallback to local posted_quizzes.json if DB count is 0
-    if count == 0:
+    # 3. Check local posted_quizzes.json if DB has 0
+    if not published_reels:
         posted_file = Path(settings.media_storage_dir) / "posted_quizzes.json"
         if posted_file.exists():
             import json
@@ -81,19 +99,36 @@ async def get_published_today_count(tz: zoneinfo.ZoneInfo, now: datetime) -> int
                 with open(posted_file, "r", encoding="utf-8") as f:
                     items = json.load(f)
                     for it in items:
-                        posted_at = it.get("posted_at", "") or it.get("created_at", "")
-                        if posted_at.startswith(today_str):
-                            count += 1
+                        media_id = str(it.get("media_id") or "").strip()
+                        if not media_id or media_id == "None" or media_id.startswith("mock"):
+                            continue
+                        ts_val = it.get("posted_at_utc") or it.get("posted_at") or it.get("created_at")
+                        if not ts_val:
+                            continue
+                        try:
+                            if isinstance(ts_val, datetime):
+                                dt = ts_val
+                            else:
+                                dt = datetime.fromisoformat(str(ts_val))
+                            if dt.tzinfo is None:
+                                dt = dt.replace(tzinfo=timezone.utc)
+                            local_dt = dt.astimezone(tz)
+                            if local_dt.date() == today_date:
+                                published_reels.add(it.get("quiz_id") or media_id)
+                        except Exception:
+                            pass
             except Exception:
                 pass
 
-    return count
+    return len(published_reels)
 
 
-async def main():
+async def main(force: bool = False):
     parser = argparse.ArgumentParser(description="15s Countdown + Answer Reveal Quiz Reel Publisher")
     parser.add_argument("--force", action="store_true", help="Force publish regardless of time slot or daily limit")
-    args = parser.parse_args()
+    args, _ = parser.parse_known_args()
+
+    effective_force = force or args.force
 
     logger.info("=== 15-Second Countdown + Answer Reveal Quiz Reel Autopilot Engine ===")
 
@@ -108,11 +143,11 @@ async def main():
     current_hm = now.strftime("%H:%M")
     logger.info(f"Current time: {current_hm} {now.tzname()} | Target slots: Slot 1={settings.slot1_time}, Slot 2={settings.slot2_time} ({settings.timezone})")
 
-    if not args.force:
-        # Slot 1 window: e.g. 07:00 IST -> 06:25 to 08:00 IST
-        in_slot1 = is_within_slot_window(now, settings.slot1_time, before_mins=35, after_mins=60)
-        # Slot 2 window: e.g. 18:00 IST -> 17:25 to 19:00 IST
-        in_slot2 = is_within_slot_window(now, settings.slot2_time, before_mins=35, after_mins=60)
+    if not effective_force:
+        # Slot 1 window: e.g. 07:00 IST -> 06:25 to 09:00 IST (accommodates cloud queue delays)
+        in_slot1 = is_within_slot_window(now, settings.slot1_time, before_mins=35, after_mins=120)
+        # Slot 2 window: e.g. 18:00 IST -> 17:25 to 20:00 IST
+        in_slot2 = is_within_slot_window(now, settings.slot2_time, before_mins=35, after_mins=120)
 
         if not (in_slot1 or in_slot2):
             logger.warning(

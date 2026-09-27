@@ -72,17 +72,6 @@
     "posted_at": "2026-09-21T02:53:55.717031+00:00"
   },
   {
-    "quiz_id": "test_unique_quiz_123",
-    "title": "Python Quiz: Test Title Unique",
-    "media_id": "mock_media_999",
-    "instagram_url": "https://www.instagram.com/reel/mock123/",
-    "file_path": null,
-    "code_hash": "d094b5d4efc4903971d3ba7bc4d50457548cc33adaa88ac6f38f1ed426c3f94d",
-    "posted_at": "2026-09-25T18:55:07.261299",
-    "posted_at_utc": "2026-09-25T13:25:07.261319+00:00",
-    "local_time_display": "06:55 PM "
-  },
-  {
     "quiz_id": "bool_int_dict_key",
     "title": "Python Gotcha: Boolean Dictionary Keys",
     "media_id": "17963981888984536",
@@ -92,5 +81,27 @@
     "posted_at": "2026-09-26T12:17:06.699189",
     "posted_at_utc": "2026-09-26T12:17:06.699196+00:00",
     "local_time_display": "12:17 PM "
+  },
+  {
+    "quiz_id": "tuple_mutation_gotcha",
+    "title": "Python Gotcha: Mutating List inside Tuple",
+    "media_id": "18134871658729932",
+    "instagram_url": "https://www.instagram.com/reel/DdwFtSuAZht/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_tuple_mutation_gotcha_20260926_182627.mp4",
+    "code_hash": null,
+    "posted_at": "2026-09-26T18:30:13.678460",
+    "posted_at_utc": "2026-09-26T13:00:13.678479+00:00",
+    "local_time_display": "06:30 PM "
+  },
+  {
+    "quiz_id": "dict_get_default_val",
+    "title": "Python Quiz: dict.get() with None",
+    "media_id": "18115260125050385",
+    "instagram_url": "https://www.instagram.com/reel/Ddx1aqHkiNk/",
+    "file_path": "C:\\Users\\DELL\\OneDrive\\Desktop\\inst\\media_storage\\reels\\reel_dict_get_default_val_20260927_104419.mp4",
+    "code_hash": "5b901597c5567a828370c88b1ccf100b6fdb2f5186ed974223257aa59c262a2a",
+    "posted_at": "2026-09-27T10:45:09.424644",
+    "posted_at_utc": "2026-09-27T05:15:09.424654+00:00",
+    "local_time_display": "10:45 AM "
   }
 ]

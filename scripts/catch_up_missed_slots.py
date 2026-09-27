@@ -14,7 +14,7 @@ from backend.app.config import settings
 from backend.app.core.logging import logger
 from backend.app.core.db import AsyncMongoDB
 from backend.app.pipeline.quiz_manager import QuizManager
-from scripts.post_quiz_card_reel import main as post_new_quiz_reel
+from scripts.post_quiz_card_reel import main as post_new_quiz_reel, get_published_today_count
 
 
 async def check_and_recover():
@@ -35,34 +35,20 @@ async def check_and_recover():
 
     logger.info(f"Current Time: {now.strftime('%H:%M:%S')} {settings.timezone} | Slots due so far today: {slots_due}")
 
-    await AsyncMongoDB.connect()
-    db = AsyncMongoDB.get_db()
-
-    # Check which slots have already published today
-    published_today_count = 0
-    if db is not None:
-        try:
-            start_of_day = datetime(now.year, now.month, now.day, tzinfo=tz).astimezone(timezone.utc)
-            cursor = db.reels.find({
-                "status": "PUBLISHED",
-                "instagram_published_at": {"$gte": start_of_day}
-            })
-            docs = await cursor.to_list(length=10)
-            published_today_count = len(docs)
-            logger.info(f"Reels published today on Instagram: {published_today_count}")
-        except Exception as e:
-            logger.warning(f"DB check note: {e}")
+    # Check which slots have already published today accurately across DB and local cache
+    published_today_count = await get_published_today_count(tz, now)
+    logger.info(f"Reels published today on Instagram: {published_today_count}")
 
     # Check if a slot was missed
     if published_today_count < len(slots_due):
         missed = len(slots_due) - published_today_count
-        logger.warning(f"⚠️ Detected {missed} missed Reel slot(s) for today! Initiating automatic recovery...")
+        logger.warning(f"Detected {missed} missed Reel slot(s) for today! Initiating automatic recovery...")
         for i in range(missed):
             logger.info(f"Triggering recovery publish ({i+1}/{missed})...")
-            await post_new_quiz_reel()
+            await post_new_quiz_reel(force=True)
             logger.info(f"Recovery publish {i+1} completed successfully!")
     else:
-        logger.info("✅ All scheduled slots for today have been successfully published. No recovery needed.")
+        logger.info("All scheduled slots for today have been successfully published. No recovery needed.")
 
 
 if __name__ == "__main__":
