@@ -125,5 +125,16 @@
     "posted_at": "2026-09-28T01:17:18.540201",
     "posted_at_utc": "2026-09-28T01:17:18.540214+00:00",
     "local_time_display": "01:17 AM "
+  },
+  {
+    "quiz_id": "isinstance_bool_int_check",
+    "title": "Python Trap: isinstance(True, int)",
+    "media_id": "18342740941266855",
+    "instagram_url": "https://www.instagram.com/reel/Dd2jwJjFbgD/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_isinstance_bool_int_check_20260929_011615.mp4",
+    "code_hash": "383e9c409da577d33577ff98abb08536bee2da0c04dd61fb851d29f110753754",
+    "posted_at": "2026-09-29T01:17:01.638884",
+    "posted_at_utc": "2026-09-29T01:17:01.638894+00:00",
+    "local_time_display": "01:17 AM "
   }
 ]
