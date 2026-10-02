@@ -202,5 +202,16 @@
     "posted_at": "2026-10-02T01:17:08.502479",
     "posted_at_utc": "2026-10-02T01:17:08.502489+00:00",
     "local_time_display": "01:17 AM "
+  },
+  {
+    "quiz_id": "closure_nonlocal_mutation",
+    "title": "Python Gotcha: nonlocal Scope Mutation",
+    "media_id": "18127920893507329",
+    "instagram_url": "https://www.instagram.com/reel/Dd_drIZjUtu/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_closure_nonlocal_mutation_20261002_121615.mp4",
+    "code_hash": "58d92faedab38664dd9c5281c87d0ed5739828e9feb722b0c93e21542c5cebc0",
+    "posted_at": "2026-10-02T12:17:05.777335",
+    "posted_at_utc": "2026-10-02T12:17:05.777344+00:00",
+    "local_time_display": "12:17 PM "
   }
 ]
