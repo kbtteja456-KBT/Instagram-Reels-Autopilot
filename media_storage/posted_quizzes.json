@@ -191,5 +191,16 @@
     "posted_at": "2026-10-01T12:17:16.754146",
     "posted_at_utc": "2026-10-01T12:17:16.754155+00:00",
     "local_time_display": "12:17 PM "
+  },
+  {
+    "quiz_id": "dict_keys_intersection_operator",
+    "title": "Python Trap: Dict Keys Set Intersection",
+    "media_id": "17899030077604057",
+    "instagram_url": "https://www.instagram.com/reel/Dd-SJqqCLbo/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_dict_keys_intersection_operator_20261002_011620.mp4",
+    "code_hash": "49915f3d9f168650f38af9a54f50403a9aa54cb035f8f447fd18a3d6cb16d4ec",
+    "posted_at": "2026-10-02T01:17:08.502479",
+    "posted_at_utc": "2026-10-02T01:17:08.502489+00:00",
+    "local_time_display": "01:17 AM "
   }
 ]
