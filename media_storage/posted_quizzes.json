@@ -213,5 +213,16 @@
     "posted_at": "2026-10-02T12:17:05.777335",
     "posted_at_utc": "2026-10-02T12:17:05.777344+00:00",
     "local_time_display": "12:17 PM "
+  },
+  {
+    "quiz_id": "class_variable_instance_shadow",
+    "title": "Python Gotcha: Class vs Instance Attribute",
+    "media_id": "18345234100265303",
+    "instagram_url": "https://www.instagram.com/reel/DeA3FD9Aqqh/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_class_variable_instance_shadow_20261003_011729.mp4",
+    "code_hash": "ca430a98ccab65da3791410aaf2f5cf082a4c630b78fd64a0567e344aa8b8200",
+    "posted_at": "2026-10-03T01:18:24.413471",
+    "posted_at_utc": "2026-10-03T01:18:24.413482+00:00",
+    "local_time_display": "01:18 AM "
   }
 ]
