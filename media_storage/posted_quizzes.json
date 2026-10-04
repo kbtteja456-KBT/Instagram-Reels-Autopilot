@@ -246,5 +246,16 @@
     "posted_at": "2026-10-04T01:17:22.995404",
     "posted_at_utc": "2026-10-04T01:17:22.995415+00:00",
     "local_time_display": "01:17 AM "
+  },
+  {
+    "quiz_id": "set_symmetric_difference_xor",
+    "title": "Python Quiz: Set Symmetric Difference",
+    "media_id": "18012557573958551",
+    "instagram_url": "https://www.instagram.com/reel/DeEnSGADIki/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_set_symmetric_difference_xor_20261004_121625.mp4",
+    "code_hash": "4a1edf51300e1d6ef8ecc0856e5bdbfcf6090197e8d8a6f53a5ece4770287dbf",
+    "posted_at": "2026-10-04T12:17:17.773499",
+    "posted_at_utc": "2026-10-04T12:17:17.773510+00:00",
+    "local_time_display": "12:17 PM "
   }
 ]
