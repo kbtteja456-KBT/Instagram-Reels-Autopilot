@@ -257,5 +257,16 @@
     "posted_at": "2026-10-04T12:17:17.773499",
     "posted_at_utc": "2026-10-04T12:17:17.773510+00:00",
     "local_time_display": "12:17 PM "
+  },
+  {
+    "quiz_id": "dict_setdefault_existing_key",
+    "title": "Python Trap: dict.setdefault() Existing Key",
+    "media_id": "18094792088133453",
+    "instagram_url": "https://www.instagram.com/reel/DeGAhj-D-iy/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_dict_setdefault_existing_key_20261005_011619.mp4",
+    "code_hash": "d7a6593f5eb646802d32c854fdeccd77ac7f5b031221f4df9a24c991c39381a3",
+    "posted_at": "2026-10-05T01:17:03.784472",
+    "posted_at_utc": "2026-10-05T01:17:03.784479+00:00",
+    "local_time_display": "01:17 AM "
   }
 ]
