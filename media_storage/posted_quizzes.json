@@ -268,5 +268,16 @@
     "posted_at": "2026-10-05T01:17:03.784472",
     "posted_at_utc": "2026-10-05T01:17:03.784479+00:00",
     "local_time_display": "01:17 AM "
+  },
+  {
+    "quiz_id": "string_find_missing_return",
+    "title": "Python Quiz: str.find() Missing Substring",
+    "media_id": "18116550512008228",
+    "instagram_url": "https://www.instagram.com/reel/DeHMEDyCWYp/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_string_find_missing_return_20261005_121621.mp4",
+    "code_hash": "edc92fad77814d8cac279d73a719f4213dd049c519e016f40ffc441eefa7f526",
+    "posted_at": "2026-10-05T12:17:07.980645",
+    "posted_at_utc": "2026-10-05T12:17:07.980652+00:00",
+    "local_time_display": "12:17 PM "
   }
 ]
