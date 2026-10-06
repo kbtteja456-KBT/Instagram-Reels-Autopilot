@@ -279,5 +279,16 @@
     "posted_at": "2026-10-05T12:17:07.980645",
     "posted_at_utc": "2026-10-05T12:17:07.980652+00:00",
     "local_time_display": "12:17 PM "
+  },
+  {
+    "quiz_id": "lambda_default_arg_late_binding_fix",
+    "title": "Python Quiz: Fixing Late Binding in Lambdas",
+    "media_id": "18138252976727910",
+    "instagram_url": "https://www.instagram.com/reel/DeIlW7LE2FO/",
+    "file_path": "/home/runner/work/Instagram-Reels-Autopilot/Instagram-Reels-Autopilot/media_storage/reels/reel_lambda_default_arg_late_binding_fix_20261006_011635.mp4",
+    "code_hash": "213db9805e5d28e08556940677e8ae4712523d9346e278b9c9bd5b95f43eef2e",
+    "posted_at": "2026-10-06T01:17:22.115185",
+    "posted_at_utc": "2026-10-06T01:17:22.115194+00:00",
+    "local_time_display": "01:17 AM "
   }
 ]
