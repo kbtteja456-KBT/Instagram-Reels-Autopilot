@@ -612,8 +612,11 @@ def render_educational_episode(ep_data: Dict[str, Any]) -> str:
         "-map", "[aout]",
         "-c:v", "libx264",
         "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
         "-c:a", "aac",
         "-b:a", "192k",
+        "-ar", "48000",
+        "-ac", "2",
         "-t", str(TOTAL_SECONDS),
         str(final_video)
     ]

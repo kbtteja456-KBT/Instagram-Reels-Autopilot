@@ -58,6 +58,20 @@ class InstagramClient:
         except Exception as e:
             logger.warning(f"[MetaClient] tmpfiles upload note: {e}")
 
+        # 3. Try 0x0.st
+        try:
+            logger.info(f"[MetaClient] Uploading video to public CDN (0x0.st): {filename}...")
+            async with httpx.AsyncClient(timeout=90.0, verify=False) as client:
+                with open(video_filepath, "rb") as f:
+                    files = {"file": (filename, f, "video/mp4")}
+                    resp = await client.post("https://0x0.st", files=files)
+                    if resp.status_code == 200 and resp.text.strip().startswith("http"):
+                        cdn_url = resp.text.strip()
+                        logger.info(f"[MetaClient] CDN upload successful (0x0.st): {cdn_url}")
+                        return cdn_url
+        except Exception as e:
+            logger.warning(f"[MetaClient] 0x0.st upload note: {e}")
+
         # 3. Fallback to settings.clean_public_media_base_url
         return f"{settings.clean_public_media_base_url}/api/media/download/{filename}"
 
