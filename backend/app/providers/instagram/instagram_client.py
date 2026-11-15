@@ -58,8 +58,8 @@ class InstagramClient:
         except Exception as e:
             logger.warning(f"[MetaClient] tmpfiles upload note: {e}")
 
-        # 3. Fallback to settings.public_media_base_url
-        return f"{settings.public_media_base_url.rstrip('/')}/api/media/download/{filename}"
+        # 3. Fallback to settings.clean_public_media_base_url
+        return f"{settings.clean_public_media_base_url}/api/media/download/{filename}"
 
     async def create_reel_container(
         self,
@@ -76,7 +76,7 @@ class InstagramClient:
             return "mock_creation_id_178499281729102"
 
         if not video_url:
-            video_url = f"{settings.public_media_base_url.rstrip('/')}/api/media/download/{video_filename}"
+            video_url = f"{settings.clean_public_media_base_url}/api/media/download/{video_filename}"
         url = f"{self.base_url}/{self.ig_user_id}/media"
         
         payload: Dict[str, Any] = {

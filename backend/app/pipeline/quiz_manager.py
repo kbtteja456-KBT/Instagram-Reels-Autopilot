@@ -938,7 +938,7 @@ class QuizManager:
             from pymongo import MongoClient
             from backend.app.config import settings
             if settings.mongodb_uri and not settings.mongodb_uri.startswith("mock"):
-                client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=3000)
+                client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=8000)
                 db = client[settings.mongodb_db_name]
 
                 for doc in db.posted_quizzes.find():
@@ -968,6 +968,11 @@ class QuizManager:
         """Strict check whether a quiz has already been published to Instagram."""
         records = self.get_posted_quiz_records()
         quiz_id = quiz.get("quiz_id")
+
+        if quiz.get("is_recycled"):
+            # For intentionally recycled LRU quizzes, ensure this specific recycled instance hasn't posted today
+            return any(quiz_id and r.get("quiz_id") == quiz_id for r in records)
+
         title_norm = (quiz.get("title") or "").strip().lower()
 
         code_str = quiz.get("code") or ""
@@ -1042,7 +1047,7 @@ class QuizManager:
             from pymongo import MongoClient
             from backend.app.config import settings
             if settings.mongodb_uri and not settings.mongodb_uri.startswith("mock"):
-                client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=3000)
+                client = MongoClient(settings.mongodb_uri, serverSelectionTimeoutMS=8000)
                 db = client[settings.mongodb_db_name]
                 db.posted_quizzes.update_one(
                     {"quiz_id": quiz_id},
@@ -1113,7 +1118,9 @@ class QuizManager:
 
         sorted_curated = sorted(CURATED_QUIZZES, key=lambda q: quiz_last_posted.get(q["quiz_id"], "1970-01-01"))
         chosen = dict(sorted_curated[0])
-        logger.info(f"[QuizManager] LRU Selected: '{chosen['quiz_id']}' (last posted on: {quiz_last_posted.get(chosen['quiz_id'])})")
+        chosen["quiz_id"] = f"{chosen['quiz_id']}_r_{datetime.now().strftime('%Y%m%d')}"
+        chosen["is_recycled"] = True
+        logger.info(f"[QuizManager] LRU Selected: '{chosen['quiz_id']}' (last posted on: {quiz_last_posted.get(sorted_curated[0]['quiz_id'])})")
         return chosen
 
     def get_next_unposted_quiz(self) -> Dict[str, Any]:

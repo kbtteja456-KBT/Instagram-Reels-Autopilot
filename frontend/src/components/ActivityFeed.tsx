@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityItem } from '../services/api';
+import { ActivityItem, API_BASE } from '../services/api';
 import { CheckCircleIcon } from './Icons';
 
 interface ActivityFeedProps {
@@ -18,7 +18,7 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = () => {
   ]);
 
   useEffect(() => {
-    const eventSource = new EventSource('/api/activity/stream');
+    const eventSource = new EventSource(`${API_BASE}/activity/stream`);
 
     eventSource.onmessage = (event) => {
       try {

@@ -3,8 +3,13 @@
  */
 
 const viteEnv = (import.meta as any).env;
-const API_BASE = (viteEnv && viteEnv.VITE_API_URL) 
-  ? `${String(viteEnv.VITE_API_URL).replace(/\/$/, '')}/api` 
+const rawApiUrl = viteEnv?.VITE_API_URL ? String(viteEnv.VITE_API_URL).trim() : '';
+const normalizedApiUrl = rawApiUrl 
+  ? (rawApiUrl.startsWith('http') ? rawApiUrl : `https://${rawApiUrl}`)
+  : '';
+
+export const API_BASE = normalizedApiUrl 
+  ? `${normalizedApiUrl.replace(/\/$/, '')}/api` 
   : '/api';
 
 const TOKEN_KEY = 'inst_autopilot_token';

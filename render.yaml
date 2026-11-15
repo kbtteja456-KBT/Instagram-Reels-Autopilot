@@ -1,4 +1,5 @@
 services:
+  # 1. FastAPI Backend + FFmpeg + Autonomous Scheduler
   - type: web
     name: instagram-autopilot-backend
     runtime: docker
@@ -7,6 +8,10 @@ services:
     region: oregon
     healthCheckPath: /api/health
     envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB_NAME
+        value: instagram_autopilot
       - key: META_APP_ID
         sync: false
       - key: META_APP_SECRET
@@ -14,6 +19,10 @@ services:
       - key: INSTAGRAM_ACCOUNT_ID
         sync: false
       - key: INSTAGRAM_ACCESS_TOKEN
+        sync: false
+      - key: ENCRYPTION_KEY
+        sync: false
+      - key: JWT_SECRET
         sync: false
       - key: OPENROUTER_API_KEY
         sync: false
@@ -23,15 +32,8 @@ services:
         sync: false
       - key: PIXABAY_API_KEY
         sync: false
-      - key: MONGODB_URI
-        sync: false
-      - key: MONGODB_DB_NAME
-        value: instagram_autopilot
-      - key: PUBLIC_MEDIA_BASE_URL
-        fromService:
-          type: web
-          name: instagram-autopilot-backend
-          property: host
+      - key: ENABLE_INTERNAL_SCHEDULER
+        value: "true"
       - key: TIMEZONE
         value: Asia/Kolkata
       - key: SLOT1_TIME
@@ -42,3 +44,25 @@ services:
         value: "2"
       - key: ZERO_COST_MODE
         value: "true"
+      - key: PUBLIC_MEDIA_BASE_URL
+        fromService:
+          type: web
+          name: instagram-autopilot-backend
+          property: host
+
+  # 2. Cybernetic React Dashboard (Render Free Static Site CDN)
+  - type: static
+    name: instagram-autopilot-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: instagram-autopilot-backend
+          property: host
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

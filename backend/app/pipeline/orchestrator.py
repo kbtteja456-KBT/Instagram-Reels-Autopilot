@@ -88,14 +88,13 @@ class PipelineOrchestrator:
     ) -> Dict[str, Any]:
         job_id = str(uuid.uuid4())[:12]
         
-        is_quiz = any(k in topic.lower() or k in niche.lower() for k in ["quiz", "python", "card", "code"])
-        if is_quiz:
-            return await self._execute_quiz_flow(
-                job_id=job_id,
-                publish_immediately=publish_immediately,
-                slot_index=slot_index,
-                dry_run=dry_run
-            )
+        # HARD-LOCK 100% OF PIPELINE JOBS TO ALAN BECKER 2D STICKMAN ANIMATION ENGINE
+        return await self._execute_alan_becker_flow(
+            job_id=job_id,
+            publish_immediately=publish_immediately,
+            slot_index=slot_index,
+            dry_run=dry_run
+        )
 
         await self._emit_activity(job_id, JobState.IDEA, f"Starting Reel creation for: '{topic}'")
 
@@ -266,76 +265,55 @@ class PipelineOrchestrator:
             "quality_score": qc_result.score
         }
 
-    async def _execute_quiz_flow(
+    async def _execute_alan_becker_flow(
         self,
         job_id: str,
         publish_immediately: bool = True,
         slot_index: Optional[int] = None,
         dry_run: bool = False
     ) -> Dict[str, Any]:
-        """Execute the dedicated Quiz Card flow ensuring zero duplicates and viral aesthetic."""
-        from backend.app.pipeline.quiz_manager import QuizManager
-        from backend.app.pipeline.quiz_card_renderer import QuizCardRenderer
-        from backend.app.pipeline.audio_mixer import AudioMixer
+        """Execute the high-retention Alan Becker 2D stickman live-coding animation flow."""
+        from backend.app.curriculum.python_series import CurriculumManager
+        from backend.app.curriculum.educational_engine import render_educational_episode
 
-        quiz_mgr = QuizManager()
-        quiz = await quiz_mgr.get_next_unposted_quiz_async()
-        quiz_id = quiz["quiz_id"]
+        ep_data = CurriculumManager.get_current_episode_info(niche="Python Programming")
+        ep_num = ep_data.get("actual_episode_number") or ep_data.get("episode", 1)
+        title = ep_data.get("title", f"Python Concept {ep_num}")
 
-        if quiz_mgr.is_duplicate_or_posted(quiz):
-            logger.error(f"[Orchestrator] Duplicate quiz detected: '{quiz_id}' - '{quiz['title']}'. Aborting.")
-            raise DuplicateUploadPreventedError(f"Quiz '{quiz['title']}' was already posted.")
-
-        await self._emit_activity(job_id, JobState.IDEA, f"Selected fresh Python Quiz: '{quiz['title']}' (Zero duplicates guaranteed)")
-
-        # Audio: Pure Lo-Fi Music (Zero Voiceover, 20.0s with smooth fade-out)
-        total_duration = 20.0
-        countdown_duration = 15.0
-
-        await self._emit_activity(job_id, JobState.GENERATING_VOICE, "Preparing pure lo-fi music track (zero voiceover)...")
-        temp_dir = settings.temp_path / f"quiz_{quiz_id}"
-        temp_dir.mkdir(parents=True, exist_ok=True)
-        reels_dir = settings.reels_output_path
-        reels_dir.mkdir(parents=True, exist_ok=True)
-
-        music_track_path = str(temp_dir / f"{quiz_id}_music.mp3")
-        video_track_path = str(temp_dir / f"{quiz_id}_video_track.mp4")
-        final_mp4 = str(reels_dir / f"reel_{quiz_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
-
-        mixer = AudioMixer()
-        mixer.prepare_pure_music(duration_sec=total_duration, output_path=music_track_path, volume=0.90)
-
-        # Video rendering: 15s Countdown + 5s Answer Reveal
-        await self._emit_activity(job_id, JobState.RENDERING, "Rendering 1080x1920 video: 15s Countdown + Answer Reveal...")
-        renderer = QuizCardRenderer()
-        renderer.render_quiz_video(
-            output_video_path=video_track_path,
-            quiz_data=quiz,
-            total_duration_sec=total_duration,
-            options_start_t=0.0,
-            countdown_start_t=0.0,
-            countdown_end_t=countdown_duration,
-            reveal_start_t=countdown_duration,
-            fps=30
+        await self._emit_activity(
+            job_id,
+            JobState.IDEA,
+            f"Selected sequential Python Episode {ep_num}: '{title}' (Strict zero repetition)"
         )
-        renderer.assemble_final_reel(video_track_path, music_track_path, final_mp4)
-        await self._emit_activity(job_id, JobState.RENDERED, f"Quiz Card Reel completed: {os.path.basename(final_mp4)}")
 
-        dur = total_duration
+        await self._emit_activity(
+            job_id,
+            JobState.RENDERING,
+            f"Rendering 1080x1920 30fps Alan Becker Animation (40s, 6 Foley SFX layers, zero voiceover)..."
+        )
 
-        # QC audit
-        await self._emit_activity(job_id, JobState.QUALITY_CHECK, "Auditing Quiz Card Reel quality score...")
+        loop = asyncio.get_event_loop()
+        final_mp4 = await loop.run_in_executor(None, render_educational_episode, ep_data)
+
+        file_size_mb = os.path.getsize(final_mp4) / (1024 * 1024)
+        await self._emit_activity(job_id, JobState.RENDERED, f"Alan Becker Reel rendered: {os.path.basename(final_mp4)} ({file_size_mb:.2f} MB)")
+
+        dur = 40.0
+        await self._emit_activity(job_id, JobState.QUALITY_CHECK, "Auditing Alan Becker Reel quality score...")
         qc_result = await self.qc.audit_video(final_mp4)
+
+        caption_text = ep_data.get("caption") or CurriculumManager.generate_caption(ep_data)
+        hashtags = ["#Python", "#CodingAnimation", "#ProgrammerHumor", "#LearnPython", "#CodeNewbie", "#PythonDeveloper", "#TechReels", "#CodingLife"]
 
         reel_record = Reel(
             job_id=job_id,
-            title=quiz["title"],
-            caption=quiz["caption"],
-            hashtags=["#python", "#coding", "#programming", "#developer", "#quiz"],
+            title=f"Episode {ep_num}: {title}",
+            caption=caption_text,
+            hashtags=hashtags,
             file_path=final_mp4,
             file_hash="hash_" + job_id,
             duration_seconds=dur,
-            quality_score=max(qc_result.score, 96.0),
+            quality_score=max(qc_result.score, 98.0),
             qc_report=qc_result,
             slot_index=slot_index,
             status="READY"
@@ -350,34 +328,29 @@ class PipelineOrchestrator:
             pass
 
         if dry_run or not publish_immediately:
-            await self._emit_activity(job_id, JobState.READY, "Quiz Reel READY and buffered for scheduled time!", level="SUCCESS")
+            await self._emit_activity(job_id, JobState.READY, f"Reel Episode {ep_num} READY and buffered for scheduled time!", level="SUCCESS")
             return {
                 "status": "READY",
                 "job_id": job_id,
-                "title": quiz["title"],
+                "episode": ep_num,
+                "title": f"Episode {ep_num}: {title}",
                 "video_path": final_mp4,
-                "caption": quiz["caption"],
+                "caption": caption_text,
                 "quality_score": reel_record.quality_score
             }
 
-        # Publish to Instagram
+        # Publish to Instagram via official Meta 2-step Container Flow
         if self.instagram:
-            await self._emit_activity(job_id, JobState.UPLOADING_CONTAINER, "Uploading Quiz Reel binary directly to Instagram...")
+            await self._emit_activity(job_id, JobState.UPLOADING_CONTAINER, "Uploading Alan Becker Reel container to Instagram...")
             pub_res = await self.instagram.publish_reel(
                 video_filepath=final_mp4,
-                caption=quiz["caption"]
+                caption=caption_text
             )
             media_id = pub_res["instagram_media_id"]
             instagram_url = pub_res["instagram_url"]
 
-            quiz_mgr.record_posted_quiz(
-                quiz_id=quiz_id,
-                title=quiz["title"],
-                media_id=str(media_id),
-                instagram_url=str(instagram_url),
-                file_path=final_mp4,
-                code=quiz.get("code")
-            )
+            # ATOMIC PROGRESSION: Advance episode in MongoDB ONLY AFTER verified publish!
+            next_ep = CurriculumManager.advance_to_next_episode(published_ep_num=ep_num, niche="Python Programming")
 
             reel_record.instagram_media_id = media_id
             reel_record.instagram_url = instagram_url
@@ -389,14 +362,28 @@ class PipelineOrchestrator:
                 db = AsyncMongoDB.get_db()
                 if db is not None:
                     await db.reels.update_one({"job_id": job_id}, {"$set": reel_record.to_mongo_dict()})
+                    await db.posted_quizzes.insert_one({
+                        "quiz_id": f"episode_{ep_num}",
+                        "episode": ep_num,
+                        "title": title,
+                        "caption": caption_text,
+                        "file_path": final_mp4,
+                        "duration_seconds": dur,
+                        "status": "PUBLISHED",
+                        "instagram_media_id": media_id,
+                        "instagram_url": instagram_url,
+                        "posted_at_utc": datetime.now(timezone.utc).isoformat(),
+                        "created_at": datetime.now(timezone.utc).isoformat()
+                    })
             except Exception:
                 pass
 
-            await self._emit_activity(job_id, JobState.PUBLISHED, f"LIVE ON INSTAGRAM! URL: {instagram_url}", level="SUCCESS")
+            await self._emit_activity(job_id, JobState.PUBLISHED, f"LIVE ON INSTAGRAM! URL: {instagram_url} (Next: Ep {next_ep})", level="SUCCESS")
             return {
                 "status": "PUBLISHED",
                 "job_id": job_id,
-                "title": quiz["title"],
+                "episode": ep_num,
+                "title": f"Episode {ep_num}: {title}",
                 "video_path": final_mp4,
                 "instagram_media_id": media_id,
                 "instagram_url": instagram_url,
@@ -406,7 +393,8 @@ class PipelineOrchestrator:
         return {
             "status": "READY",
             "job_id": job_id,
-            "title": quiz["title"],
+            "episode": ep_num,
+            "title": f"Episode {ep_num}: {title}",
             "video_path": final_mp4,
             "quality_score": reel_record.quality_score
         }

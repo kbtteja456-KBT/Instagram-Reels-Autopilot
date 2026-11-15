@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Reel } from '../services/api';
+import { Reel, API_BASE } from '../services/api';
 import { TrashIcon, ExternalLinkIcon, CheckCircleIcon } from '../components/Icons';
 
 interface VideosPageProps {
@@ -162,7 +162,7 @@ export const VideosPage: React.FC<VideosPageProps> = ({
               <div className="smartphone-viewport">
                 <div className="smartphone-notch" />
                 <video
-                  src={`/api/media/download/${selectedVideo.file_path.split('/').pop()?.split('\\').pop()}`}
+                  src={`${API_BASE}/media/download/${selectedVideo.file_path.split('/').pop()?.split('\\').pop()}`}
                   controls
                   autoPlay
                   loop

@@ -18,7 +18,7 @@ class LocalStorageProvider:
 
     def get_public_media_url(self, filename: str) -> str:
         """Construct the publicly accessible URL that Meta's servers will download."""
-        base = settings.public_media_base_url.rstrip("/")
+        base = settings.clean_public_media_base_url
         return f"{base}/api/media/download/{filename}"
 
     def clean_temp_files(self, job_id: str) -> None:

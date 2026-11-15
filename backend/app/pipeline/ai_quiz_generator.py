@@ -14,9 +14,10 @@ from backend.app.config import settings
 from backend.app.core.logging import logger
 
 FALLBACK_MODELS = [
-    "cohere/north-mini-code:free",
-    "liquid/lfm-2.5-2.6b:free",
-    "qwen/qwen3.8-27b:free"
+    "nvidia/nemotron-3.5-lightning:free",
+    "google/gemma-4-31b-it:free",
+    "google/gemma-4-26b-a4b-it:free",
+    "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
 ]
 
 TOPIC_IDEAS = [
@@ -89,26 +90,26 @@ CRITICAL RULES:
 4. Provide exactly 4 options (A, B, C, D) where only 1 is correct.
 5. Provide a clear, short explanation.
 
-Return ONLY a valid JSON object matching this schema (no markdown formatting, no code fences):
+Return ONLY a valid JSON object matching this schema (raw JSON only, no markdown, no code fences):
 {{
-  "quiz_id": "{random_topic.replace(' ', '_')[:20]}",
-  "title": "Python Quiz: Topic Name",
+  "quiz_id": "walrus_comp_leak",
+  "title": "Python Quiz: Walrus Scope Leak",
   "question": "What is the output of this code?",
   "file_tab": "main.py",
-  "code": "# Python code testing " + "{random_topic}",
+  "code": "data = [y := x * 2 for x in range(3)]\\nprint(data, y)",
   "badge_text": "Tricky Trap!",
   "options": [
-    {{"letter": "A", "text": "Option A"}},
-    {{"letter": "B", "text": "Option B"}},
-    {{"letter": "C", "text": "Option C"}},
-    {{"letter": "D", "text": "Option D"}}
+    {{"letter": "A", "text": "[0, 2, 4] 4"}},
+    {{"letter": "B", "text": "[0, 2, 4] NameError"}},
+    {{"letter": "C", "text": "[0, 2] 2"}},
+    {{"letter": "D", "text": "SyntaxError"}}
   ],
   "correct_idx": 0,
   "explanation_lines": [
-    "- Explanation line 1",
-    "- Explanation line 2"
+    "- The walrus operator assigns values inside comprehension.",
+    "- In Python 3, := leaks the assigned variable into the enclosing scope!"
   ],
-  "caption": "🔥 Python Quiz: Question topic!\\n\\nComment your answer before the reveal! 👇\\n\\n#python #coding #programming #developer"
+  "caption": "🔥 Python Quiz: Walrus operator scope!\\n\\nComment your answer before the reveal! 👇\\n\\n#python #coding #programming #developer"
 }}
 """
 
@@ -117,18 +118,18 @@ Return ONLY a valid JSON object matching this schema (no markdown formatting, no
             "Content-Type": "application/json"
         }
 
-        async with httpx.AsyncClient(timeout=12.0) as client:
+        async with httpx.AsyncClient(timeout=35.0) as client:
             for model in self._get_models():
                 try:
                     logger.info(f"[AIQuizGenerator] Attempting quiz generation with model '{model}'...")
                     payload = {
                         "model": model,
                         "messages": [
-                            {"role": "system", "content": "You are a helpful Python code assistant. You always respond in raw valid JSON only."},
+                            {"role": "system", "content": "You are a helpful Python code assistant. You always respond in raw valid JSON only without markdown formatting."},
                             {"role": "user", "content": prompt}
                         ],
                         "temperature": 0.7,
-                        "max_tokens": 800
+                        "max_tokens": 4096
                     }
                     response = await client.post(
                         "https://openrouter.ai/api/v1/chat/completions",
@@ -144,25 +145,39 @@ Return ONLY a valid JSON object matching this schema (no markdown formatting, no
                     if not choices:
                         continue
                     msg = choices[0].get("message", {})
-                    content = msg.get("content") or msg.get("reasoning") or choices[0].get("text") or ""
-                    content = str(content).strip()
-
-                    match = re.search(r"\{.*\}", content, re.DOTALL)
-                    if not match:
-                        logger.warning(f"[AIQuizGenerator] No JSON object found in response from {model}")
-                        continue
+                    content = str(msg.get("content") or "").strip()
+                    reasoning = str(msg.get("reasoning") or "").strip()
+                    candidate_texts = [content, reasoning, str(choices[0].get("text") or "").strip()]
 
                     quiz_json = None
-                    try:
-                        quiz_json = json.loads(match.group(0))
-                    except Exception:
-                        try:
-                            quiz_json = ast.literal_eval(match.group(0))
-                        except Exception as jde:
-                            logger.warning(f"[AIQuizGenerator] JSON/literal_eval parse error: {jde}")
+                    for raw_t in candidate_texts:
+                        if not raw_t:
                             continue
+                        # Try parsing directly
+                        try:
+                            quiz_json = json.loads(raw_t, strict=False)
+                            if isinstance(quiz_json, dict) and "question" in quiz_json:
+                                break
+                        except Exception:
+                            pass
+
+                        # Strip markdown fences
+                        cleaned = re.sub(r"^```(?:json)?\s*", "", raw_t.strip(), flags=re.MULTILINE)
+                        cleaned = re.sub(r"\s*```$", "", cleaned.strip(), flags=re.MULTILINE)
+                        first_b = cleaned.find("{")
+                        last_b = cleaned.rfind("}")
+                        if first_b != -1 and last_b > first_b:
+                            snippet = cleaned[first_b:last_b + 1]
+                            try:
+                                quiz_json = json.loads(snippet, strict=False)
+                                if isinstance(quiz_json, dict) and "question" in quiz_json:
+                                    break
+                            except Exception:
+                                pass
 
                     if not isinstance(quiz_json, dict):
+                        logger.warning(f"[AIQuizGenerator] No valid JSON object parsed from {model}")
+                        continue
                         continue
 
                     # Validate required fields

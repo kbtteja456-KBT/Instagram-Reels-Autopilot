@@ -20,7 +20,17 @@ class Settings(BaseSettings):
     instagram_access_token: Optional[str] = None
     instagram_redirect_uri: str = "http://localhost:8000/api/auth/instagram/callback"
     instagram_api_version: str = "v19.0"
-    public_media_base_url: str = "http://localhost:8000"
+    public_media_base_url: str = os.getenv("RENDER_EXTERNAL_URL") or "http://localhost:8000"
+
+    @property
+    def clean_public_media_base_url(self) -> str:
+        """Ensure public media base URL has schema and no trailing slash."""
+        base = (self.public_media_base_url or "").strip().rstrip("/")
+        if not base:
+            return "http://localhost:8000"
+        if not base.startswith("http://") and not base.startswith("https://"):
+            return f"https://{base}"
+        return base
 
     @property
     def effective_instagram_token(self) -> str:

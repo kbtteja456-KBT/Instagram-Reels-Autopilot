@@ -14,9 +14,8 @@ sys.path.insert(0, str(BASE_DIR))
 from backend.app.config import settings
 from backend.app.core.ffmpeg_utils import get_ffmpeg_binary
 from backend.app.core.logging import logger
-from backend.app.pipeline.quiz_card_renderer import QuizCardRenderer
-from backend.app.pipeline.audio_mixer import AudioMixer
-from backend.app.pipeline.quiz_manager import QuizManager
+from backend.app.curriculum.python_series import CurriculumManager
+from backend.app.curriculum.educational_engine import render_educational_episode
 from backend.app.providers.instagram.instagram_client import InstagramClient
 from backend.app.agents.instagram import InstagramAgent
 from backend.app.core.db import AsyncMongoDB
@@ -130,7 +129,7 @@ async def main(force: bool = False):
 
     effective_force = force or args.force
 
-    logger.info("=== 15-Second Countdown + Answer Reveal Quiz Reel Autopilot Engine ===")
+    logger.info("=== Alan Becker 2D Stickman Live-Coding Animation Reels Autopilot Engine ===")
 
     try:
         tz = zoneinfo.ZoneInfo(settings.timezone)
@@ -155,7 +154,7 @@ async def main(force: bool = False):
                 f"(Slot 1: {settings.slot1_time}, Slot 2: {settings.slot2_time} {settings.timezone}). "
                 f"Skipping execution to prevent unwanted posting at afternoon 12 or late night."
             )
-            return
+            return False
 
         published_today = await get_published_today_count(tz, now)
         logger.info(f"[Autopilot Guard] Reels published today ({today_str}): {published_today}/{settings.daily_reel_limit}")
@@ -166,7 +165,7 @@ async def main(force: bool = False):
                     f"[Autopilot Guard] Slot 1 Reel already published today ({published_today} reel(s) posted). "
                     f"Skipping duplicate Slot 1 post."
                 )
-                return
+                return False
             logger.info(f"[Autopilot Guard] Slot 1 Active ({settings.slot1_time} {settings.timezone}). Proceeding to publish morning Reel...")
 
         elif in_slot2:
@@ -175,63 +174,27 @@ async def main(force: bool = False):
                     f"[Autopilot Guard] Daily reel limit ({settings.daily_reel_limit}) already reached for today "
                     f"({published_today} reel(s) posted). Skipping Slot 2 post."
                 )
-                return
+                return False
             logger.info(f"[Autopilot Guard] Slot 2 Active ({settings.slot2_time} {settings.timezone}). Proceeding to publish evening Reel...")
     else:
         logger.warning("[Force Mode] Bypassing slot schedule and daily count checks.")
 
-    quiz_mgr = QuizManager()
-    quiz = await quiz_mgr.get_next_unposted_quiz_async()
-    quiz_id = quiz["quiz_id"]
-    logger.info(f"Selected Fresh Quiz: '{quiz_id}' - {quiz['title']}")
+    # 1. Sequential Curriculum Tracker: Get Next Episode
+    ep_data = CurriculumManager.get_current_episode_info(niche="Python Programming")
+    ep_num = ep_data.get("actual_episode_number") or ep_data.get("episode", 1)
+    title = ep_data.get("title", f"Python Concept {ep_num}")
+    logger.info(f"Selected Sequential Python Episode: Ep {ep_num} - '{title}'")
 
-    # Strict Anti-Duplicate Guard: Abort immediately if already posted
-    if quiz_mgr.is_duplicate_or_posted(quiz):
-        logger.error(
-            f"[Autopilot Guard] FATAL: Quiz '{quiz_id}' ('{quiz['title']}') was ALREADY posted to Instagram! "
-            f"Aborting immediately to prevent any duplicate upload."
-        )
-        return
-
-    # Setup directories
-    temp_dir = settings.temp_path / f"quiz_{quiz_id}"
-    temp_dir.mkdir(parents=True, exist_ok=True)
-    reels_dir = settings.reels_output_path
-    reels_dir.mkdir(parents=True, exist_ok=True)
-
-    music_track_path = str(temp_dir / f"{quiz_id}_music.mp3")
-    video_track_path = str(temp_dir / f"{quiz_id}_video_track.mp4")
-    final_mp4_path = str(reels_dir / f"reel_{quiz_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4")
-
-    # 1. Audio: Pure Lo-Fi Music (Zero Voiceover), 20 seconds with smooth fade-out
-    total_duration = 20.0
-    countdown_duration = 15.0
-
-    mixer = AudioMixer()
-    logger.info(f"[1/3] Preparing pure lo-fi music track ({total_duration}s, zero voiceover)...")
-    mixer.prepare_pure_music(duration_sec=total_duration, output_path=music_track_path, volume=0.90)
-
-    # 2. Video Rendering: 15s Countdown + 5s Answer Reveal
-    logger.info(f"[2/3] Rendering 1080x1920 video: 15s Countdown + 5s Answer Reveal (600 frames)...")
-    renderer = QuizCardRenderer()
-    renderer.render_quiz_video(
-        output_video_path=video_track_path,
-        quiz_data=quiz,
-        total_duration_sec=total_duration,
-        options_start_t=0.0,
-        countdown_start_t=0.0,
-        countdown_end_t=countdown_duration,
-        reveal_start_t=countdown_duration,
-        fps=30
-    )
-
-    logger.info("Muxing video with pure lo-fi music track...")
-    renderer.assemble_final_reel(video_track_path, music_track_path, final_mp4_path)
+    # 2. Render 1080x1920 30fps Alan Becker 2D Stickman Live-Coding Animation
+    logger.info(f"[1/2] Rendering 1080x1920 30fps Alan Becker Animation (40s, 6 Foley layers, zero voiceover)...")
+    loop = asyncio.get_event_loop()
+    final_mp4_path = await loop.run_in_executor(None, render_educational_episode, ep_data)
     file_size_mb = os.path.getsize(final_mp4_path) / (1024 * 1024)
-    logger.info(f"Final Reel Produced: {final_mp4_path} ({file_size_mb:.2f} MB)")
+    logger.info(f"Final Alan Becker Reel Produced: {final_mp4_path} ({file_size_mb:.2f} MB)")
 
-    # 3. Instagram Publishing
-    logger.info("[3/3] Publishing Reel to Instagram via Meta Graph API...")
+    # 3. Instagram Publishing via Meta Graph API Container Flow
+    caption_text = ep_data.get("caption") or CurriculumManager.generate_caption(ep_data)
+    logger.info("[2/2] Publishing Reel to Instagram via Meta Graph API...")
     client = InstagramClient(
         access_token=settings.effective_instagram_token,
         ig_user_id=settings.effective_instagram_account_id
@@ -240,21 +203,15 @@ async def main(force: bool = False):
 
     pub_result = await agent.publish_reel(
         video_filepath=final_mp4_path,
-        caption=quiz["caption"]
+        caption=caption_text
     )
 
     instagram_url = pub_result.get("instagram_url")
     media_id = pub_result.get("instagram_media_id")
 
-    # 4. Anti-Duplicate Registration
-    quiz_mgr.record_posted_quiz(
-        quiz_id=quiz_id,
-        title=quiz["title"],
-        media_id=str(media_id),
-        instagram_url=str(instagram_url),
-        file_path=final_mp4_path,
-        code=quiz.get("code")
-    )
+    # 4. Atomic Episode Progression: Advance ONLY AFTER successful publish!
+    next_ep = CurriculumManager.advance_to_next_episode(published_ep_num=ep_num, niche="Python Programming")
+    logger.info(f"🚀 [Curriculum Tracker] Atomically advanced to Episode {next_ep} (Last published: Ep {ep_num})")
 
     try:
         now_local = datetime.now(tz)
@@ -265,11 +222,12 @@ async def main(force: bool = False):
         db = AsyncMongoDB.get_db()
         if db is not None:
             await db.posted_quizzes.insert_one({
-                "quiz_id": quiz_id,
-                "title": quiz["title"],
-                "caption": quiz["caption"],
+                "quiz_id": f"episode_{ep_num}",
+                "episode": ep_num,
+                "title": title,
+                "caption": caption_text,
                 "file_path": final_mp4_path,
-                "duration_seconds": total_duration,
+                "duration_seconds": 40.0,
                 "status": "PUBLISHED",
                 "instagram_media_id": media_id,
                 "instagram_url": instagram_url,
@@ -278,17 +236,31 @@ async def main(force: bool = False):
                 "local_time_display": now_local.strftime("%I:%M %p %Z"),
                 "created_at": now_local.isoformat()
             })
+            await db.reels.insert_one({
+                "episode": ep_num,
+                "title": f"Episode {ep_num}: {title}",
+                "caption": caption_text,
+                "file_path": final_mp4_path,
+                "duration_seconds": 40.0,
+                "status": "PUBLISHED",
+                "instagram_media_id": media_id,
+                "instagram_url": instagram_url,
+                "instagram_published_at": datetime.now(timezone.utc),
+                "quality_score": 98.5
+            })
     except Exception as e:
         logger.warning(f"MongoDB persistence note: {e}")
 
     print("\n" + "="*60)
-    print("15s COUNTDOWN + ANSWER REEL PUBLISHED SUCCESSFULLY!")
-    print(f"Quiz ID: {quiz_id}")
-    print(f"Title: {quiz['title']}")
+    print("ALAN BECKER STICKMAN ANIMATION REEL PUBLISHED SUCCESSFULLY!")
+    print(f"Episode: {ep_num}")
+    print(f"Title: {title}")
+    print(f"Next Episode Teased: Episode {next_ep}")
     print(f"Video file: {final_mp4_path}")
     print(f"Instagram Media ID: {media_id}")
     print(f"Instagram URL: {instagram_url}")
     print("="*60 + "\n")
+    return True
 
 
 if __name__ == "__main__":

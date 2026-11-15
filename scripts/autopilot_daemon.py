@@ -34,9 +34,10 @@ file_h = logging.FileHandler(LOG_FILE, encoding="utf-8")
 file_h.setFormatter(formatter)
 daemon_logger.addHandler(file_h)
 
-stream_h = logging.StreamHandler(sys.stdout)
-stream_h.setFormatter(formatter)
-daemon_logger.addHandler(stream_h)
+if sys.stdout is not None:
+    stream_h = logging.StreamHandler(sys.stdout)
+    stream_h.setFormatter(formatter)
+    daemon_logger.addHandler(stream_h)
 
 
 async def get_published_today_count(tz: zoneinfo.ZoneInfo, now: datetime) -> int:
@@ -134,9 +135,13 @@ async def execute_publishing_with_retry(max_attempts: int = 3, force: bool = Fal
     for attempt in range(1, max_attempts + 1):
         try:
             daemon_logger.info(f"Initiating autonomous reel publish (Attempt {attempt}/{max_attempts})...")
-            await post_quiz_reel(force=force)
-            daemon_logger.info("Reel published successfully!")
-            return True
+            success = await post_quiz_reel(force=force)
+            if success:
+                daemon_logger.info("Reel published successfully!")
+                return True
+            else:
+                daemon_logger.warning("Reel publish did not post (skipped by slot schedule or guard).")
+                return False
         except Exception as e:
             daemon_logger.error(f"Publishing attempt {attempt} failed: {e}", exc_info=True)
             if attempt < max_attempts:
@@ -216,8 +221,14 @@ async def run_autopilot_daemon():
 if __name__ == "__main__":
     if sys.platform == "win32":
         try:
-            sys.stdout.reconfigure(encoding="utf-8")
-            sys.stderr.reconfigure(encoding="utf-8")
+            if sys.stdout is not None and hasattr(sys.stdout, "reconfigure"):
+                sys.stdout.reconfigure(encoding="utf-8")
+            if sys.stderr is not None and hasattr(sys.stderr, "reconfigure"):
+                sys.stderr.reconfigure(encoding="utf-8")
         except Exception:
             pass
-    asyncio.run(run_autopilot_daemon())
+    try:
+        asyncio.run(run_autopilot_daemon())
+    except Exception as fatal_e:
+        with open(LOG_FILE, "a", encoding="utf-8") as f:
+            f.write(f"\n[FATAL DAEMON CRASH] {datetime.now()}: {fatal_e}\n")
