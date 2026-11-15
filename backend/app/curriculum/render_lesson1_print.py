@@ -156,6 +156,22 @@ def draw_vector_star(draw: ImageDraw.ImageDraw, cx: int, cy: int, r_outer: int =
     draw.polygon(pts, fill=fill)
 
 
+def draw_fitted_takeaway_line(draw: ImageDraw.ImageDraw, x: int, y: int, max_w: int, text: str, fill: Tuple[int, int, int], bold: bool = False):
+    """Draw takeaway text guaranteeing it never spills out of the bounding box."""
+    font_names = ["consolab.ttf", "LiberationMono-Bold.ttf", "DejaVuSansMono-Bold.ttf"] if bold else ["consola.ttf", "LiberationMono-Regular.ttf", "DejaVuSansMono.ttf"]
+    for sz in range(25, 15, -1):
+        f = load_cross_platform_font(font_names, sz)
+        w = draw.textlength(text, font=f)
+        if w <= max_w:
+            draw.text((x, y), text, fill=fill, font=f)
+            return
+    f = load_cross_platform_font(font_names, 16)
+    clipped = text
+    while len(clipped) > 8 and draw.textlength(clipped + "...", font=f) > max_w:
+        clipped = clipped[:-1]
+    draw.text((x, y), clipped + "...", fill=fill, font=f)
+
+
 def draw_window_frame(draw: ImageDraw.ImageDraw, x0: int, y0: int, x1: int, y1: int, title: str = "main.py", is_terminal: bool = False):
     """Draw modern dark IDE window frame with macOS-style window controls."""
     bg = TERMINAL_BG if is_terminal else CARD_BG
@@ -496,8 +512,9 @@ def render_lesson1_snappy() -> Tuple[str, str]:
 
             takeaway_1 = "1. Always use lowercase print() (case-sensitive)"
             takeaway_2 = "2. Text strings must be enclosed in quotes: \"...\""
-            draw.text((ed_x0 + 30, box_y0 + 58), takeaway_1, fill=WHITE_VAR, font=FONT_TAKEAWAY_BOLD)
-            draw.text((ed_x0 + 30, box_y0 + 104), takeaway_2, fill=GREEN_STRING, font=FONT_TAKEAWAY)
+            max_takeaway_w = (ed_x1 - ed_x0) - 60
+            draw_fitted_takeaway_line(draw, ed_x0 + 30, box_y0 + 58, max_takeaway_w, takeaway_1, WHITE_VAR, bold=True)
+            draw_fitted_takeaway_line(draw, ed_x0 + 30, box_y0 + 104, max_takeaway_w, takeaway_2, GREEN_STRING, bold=False)
 
         # Instagram Safe Zone CTA (Centered at Y=1720)
         draw.rounded_rectangle([250, 1700, 830, 1775], radius=38, fill=(225, 29, 72))

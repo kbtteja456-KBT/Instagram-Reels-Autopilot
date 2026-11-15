@@ -158,6 +158,24 @@ def draw_vector_star(draw: ImageDraw.ImageDraw, cx: int, cy: int, r_outer: int =
     draw.polygon(pts, fill=fill)
 
 
+def draw_fitted_takeaway_line(draw: ImageDraw.ImageDraw, x: int, y: int, max_w: int, text: str, fill: Tuple[int, int, int], bold: bool = False):
+    """Draw takeaway text guaranteeing it never spills out of the bounding box."""
+    font_names = ["consolab.ttf", "LiberationMono-Bold.ttf", "DejaVuSansMono-Bold.ttf"] if bold else ["consola.ttf", "LiberationMono-Regular.ttf", "DejaVuSansMono.ttf"]
+    # Progressively test font sizes from 25 down to 16 until text fits cleanly
+    for sz in range(25, 15, -1):
+        f = load_cross_platform_font(font_names, sz)
+        w = draw.textlength(text, font=f)
+        if w <= max_w:
+            draw.text((x, y), text, fill=fill, font=f)
+            return
+    # If still too long at size 16, clip with ellipsis
+    f = load_cross_platform_font(font_names, 16)
+    clipped = text
+    while len(clipped) > 8 and draw.textlength(clipped + "...", font=f) > max_w:
+        clipped = clipped[:-1]
+    draw.text((x, y), clipped + "...", fill=fill, font=f)
+
+
 def draw_python_logo(draw: ImageDraw.ImageDraw, cx: int, cy: int, size: int = 36):
     """Draw crisp Python dual-color snake logo."""
     draw.rounded_rectangle([cx - size, cy - size, cx, cy], radius=size // 4, fill=(56, 114, 164))
@@ -528,8 +546,9 @@ def render_educational_episode(ep_data: Dict[str, Any]) -> str:
             draw.rounded_rectangle([ed_x0, box_y0, ed_x1, box_y1], radius=16, fill=(28, 22, 10), outline=GOLD_BORDER, width=3)
             draw_vector_star(draw, ed_x0 + 36, box_y0 + 27, r_outer=11, r_inner=5, fill=GOLD_BORDER)
             draw.text((ed_x0 + 58, box_y0 + 15), "KEY TAKEAWAYS:", fill=GOLD_BORDER, font=FONT_ALERT)
-            draw.text((ed_x0 + 30, box_y0 + 58), takeaway_l1, fill=WHITE_VAR, font=FONT_TAKEAWAY_BOLD)
-            draw.text((ed_x0 + 30, box_y0 + 104), takeaway_l2, fill=GREEN_STRING, font=FONT_TAKEAWAY)
+            max_takeaway_w = (ed_x1 - ed_x0) - 60  # 920 - 60 = 860px max width inside the card
+            draw_fitted_takeaway_line(draw, ed_x0 + 30, box_y0 + 58, max_takeaway_w, takeaway_l1, WHITE_VAR, bold=True)
+            draw_fitted_takeaway_line(draw, ed_x0 + 30, box_y0 + 104, max_takeaway_w, takeaway_l2, GREEN_STRING, bold=False)
 
         # Instagram Safe Zone CTA (Centered at Y=1720)
         draw.rounded_rectangle([200, 1700, 880, 1775], radius=38, fill=(225, 29, 72))
