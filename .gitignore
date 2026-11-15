@@ -16,6 +16,7 @@ venv/
 media_storage/temp/
 media_storage/audio/
 media_storage/reels/
+media_storage/thumbnails/
 *.mp4
 *.mp3
 *.ass
