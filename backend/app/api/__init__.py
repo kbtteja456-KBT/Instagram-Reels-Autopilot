@@ -10,6 +10,7 @@ from backend.app.api.routes_settings import router as settings_router
 from backend.app.api.routes_activity import router as activity_router
 from backend.app.api.routes_media import router as media_router
 from backend.app.api.routes_vault import router as vault_router
+from backend.app.gita_api import router as gita_router
 
 api_router = APIRouter(prefix="/api")
 
@@ -21,3 +22,4 @@ api_router.include_router(settings_router)
 api_router.include_router(activity_router)
 api_router.include_router(media_router)
 api_router.include_router(vault_router)
+api_router.include_router(gita_router)

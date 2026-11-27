@@ -53,6 +53,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOwn
           );
         })}
 
+        <a className="nav-item" href="/gita" style={{ marginTop: '8px', color: '#f0c782' }}>
+          <span className="nav-icon" aria-hidden="true" style={{ fontSize: '17px', fontFamily: 'Georgia, serif' }}>ॐ</span>
+          <span>Gita Companion</span>
+        </a>
+
         {onOpenVault && (
           <button
             className="nav-item"
