@@ -11,6 +11,7 @@ import { LandingPage } from './pages/LandingPage';
 import { AuthPage } from './pages/AuthPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { TermsPage } from './pages/TermsPage';
+import { GitaPage } from './pages/GitaPage';
 import { ApiKeyVaultModal } from './components/ApiKeyVaultModal';
 import { CreateVideoModal } from './components/CreateVideoModal';
 import {
@@ -24,7 +25,7 @@ import {
   ProvidersHealthResponse
 } from './services/api';
 
-export const App: React.FC = () => {
+const AutopilotApp: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(() => {
     return {
       id: 'usr_kbtteja',
@@ -79,6 +80,7 @@ export const App: React.FC = () => {
   };
 
   useEffect(() => {
+    document.title = 'AI Instagram Reels Autopilot';
     checkSession();
     loadAllData();
   }, []);
@@ -342,6 +344,14 @@ export const App: React.FC = () => {
       />
     </div>
   );
+};
+
+export const App: React.FC = () => {
+  const pathname = typeof window !== 'undefined' ? window.location.pathname : '/';
+  if (pathname === '/autopilot' || pathname === '/privacy' || pathname === '/terms' || pathname === '/landing' || pathname === '/auth') {
+    return <AutopilotApp />;
+  }
+  return <GitaPage />;
 };
 
 export default App;
