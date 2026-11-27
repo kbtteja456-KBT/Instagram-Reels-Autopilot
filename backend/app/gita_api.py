@@ -32,7 +32,7 @@ Be faithful to the text. Distinguish a paraphrase from a direct quotation; do no
 @router.post("/ask")
 async def ask_gita_question(payload: GitaQuestion) -> dict[str, str]:
     """Answer one question using the configured server-side OpenRouter credential."""
-    api_key = settings.openrouter_api_key
+    api_key = settings.openrouter_api_key or settings.openrouter_api_key_2
     if not api_key or api_key.startswith("mock_"):
         raise HTTPException(status_code=503, detail="The Gita companion is not configured yet. Please try again later.")
 
